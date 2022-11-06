@@ -53,12 +53,12 @@ paste0(file_path, "/share-electricity-renewables.csv")
 df_renen <- read.csv(paste0(file_path, "/share-electricity-renewables.csv"),header=TRUE)
 df_globwarm <- read.csv(paste0(file_path, "/climate-change.csv"),header=TRUE)
 
-df_renen[1:150,] %>%
+df_renen[1:200,] %>%
   kable(format = "html", col.names = colnames(df)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
 
-df_globwarm[1:150,] %>%
+df_globwarm[1:200,] %>%
   kable(format = "html", col.names = colnames(df)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
