@@ -1,7 +1,7 @@
 ---
-title: "Analyzing a Superstore dataset"
+title: "Evolution of solar energy production and use."
 author: "Laia Porcar, Luis Marcos López, Philippe Robert"
-date: "7/17/2022"
+date: "11/08/2022"
 output:
   html_document:
     keep_md: yes
@@ -27,7 +27,6 @@ options(warn=-1)
 #install.packages("devtools")
 
 
-
 # Libraries
 library(knitr)
 library(tidyverse)
@@ -40,7 +39,6 @@ library(car)
 library(kableExtra)
 library(ggpubr)
 
-
 ```
 
 
@@ -49,16 +47,46 @@ library(ggpubr)
 # Read the dataset
 file_path <- getwd()
 paste(file_path)
-paste0(file_path, "/share-electricity-renewables.csv")
-df_renen <- read.csv(paste0(file_path, "/share-electricity-renewables.csv"),header=TRUE)
-df_globwarm <- read.csv(paste0(file_path, "/climate-change.csv"),header=TRUE)
 
-df_renen[1:150,] %>%
+df_capacity <- read.csv(paste0(file_path, "/installed-solar-PV-capacity.csv"),header=TRUE)
+df_capita <- read.csv(paste0(file_path, "/per-capita-solar.csv"),header=TRUE)
+df_primary <- read.csv(paste0(file_path, "/primary-energy-consumption-from-solar.csv"),header=TRUE)
+df_share <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
+df_consump <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
+df_cumcap <- read.csv(paste0(file_path, "/solar-pv-cumulative-capacity.csv"),header=TRUE)
+df_prices <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
+
+df_capacity[1:150,] %>%
   kable(format = "html", col.names = colnames(df)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
 
-df_globwarm[1:150,] %>%
+df_capita[1:150,] %>%
+  kable(format = "html", col.names = colnames(df)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+df_primary[1:150,] %>%
+  kable(format = "html", col.names = colnames(df)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+df_share[1:150,] %>%
+  kable(format = "html", col.names = colnames(df)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+df_consump[1:150,] %>%
+  kable(format = "html", col.names = colnames(df)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+df_cumcap[1:150,] %>%
+  kable(format = "html", col.names = colnames(df)) %>%
+  kable_styling() %>%
+  kableExtra::scroll_box(width = "100%", height = "300px")
+
+df_prices[1:150,] %>%
   kable(format = "html", col.names = colnames(df)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
