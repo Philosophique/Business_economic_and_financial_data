@@ -55,6 +55,8 @@ df_share <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TR
 df_consump <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
 df_cumcap <- read.csv(paste0(file_path, "/solar-pv-cumulative-capacity.csv"),header=TRUE)
 df_prices <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
+df_totconsumpcapita <- read.csv(paste0(file_path, "/energy.csv"), header=TRUE)
+# 10215 obs. for df_totconsumpcapita vs 4782 obs. for df_capita
 
 df_capacity[1:150,] %>%
   kable(format = "html", col.names = colnames(df)) %>%
@@ -90,5 +92,11 @@ df_prices[1:150,] %>%
   kable(format = "html", col.names = colnames(df)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
+
+df_totconsumpcapita[1:150,] %>% 
+  kable(format = "html", col.names = colnames(df)) %>% 
+  kable_styling() %>% 
+  kableExtra::scroll_box(width = "100%", height = "300ppx")
+  
 
 ```
