@@ -55,6 +55,8 @@ df_shar <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRU
 df_consump <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
 df_cumcapac <- read.csv(paste0(file_path, "/solar-pv-cumulative-capacity.csv"),header=TRUE)
 df_pris <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
+df_totconsumpcapita <- read.csv(paste0(file_path, "/per-capita-energy.csv"), header=TRUE)
+
 
 df_capac[1:150,] %>%
   kable(format = "html", col.names = colnames(df_capacity)) %>%
@@ -90,6 +92,12 @@ df_pris[1:150,] %>%
   kable(format = "html", col.names = colnames(df_prices)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
+
+
+df_totconsumpcapita[1:150,] %>% 
+  kable(format = "html", col.names = colnames(df)) %>% 
+  kable_styling() %>% 
+  kableExtra::scroll_box(width = "100%", height = "300ppx")
 
 ```
 
@@ -135,6 +143,12 @@ df_price <- df_price %>% group_by(Year) %>%
   summarise(Price.PV.Module = sum(df_pris$Solar.PV.Module.Cost..2019.US..per.W.))
 
 
+df_totconsump <- subset(df_totconsumpcapita, Entity = 'World')
+df_totconsump <- df_totconsump %>% group_by(Year) %>% 
+  summarise(Total.Consumption.TWh = sum(df_totconsump$Electricity.consumption.TWh))
+
+
+
 # Merge datasets
 
 df <- merge(df_capacity,df_capita,by="Year")
@@ -143,6 +157,7 @@ df <- merge(df,df_share,by="Year")
 df <- merge(df,df_consumption,by="Year")
 df <- merge(df,df_cumcap,by="Year")
 df <- merge(df,df_price,by="Year")
+df <- merge(df,df_totconsump,by="Year")
 df
 
 ```
