@@ -54,7 +54,7 @@ df_prim <- read.csv(paste0(file_path, "/primary-energy-consumption-from-solar.cs
 df_shar <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
 df_consump <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
 df_cumcapac <- read.csv(paste0(file_path, "/solar-pv-cumulative-capacity.csv"),header=TRUE)
-df_pris <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
+df_price <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
 df_totconsumpcapita <- read.csv(paste0(file_path, "/per-capita-energy.csv"), header=TRUE)
 
 
@@ -88,7 +88,7 @@ df_cumcapac[1:150,] %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
 
-df_pris[1:150,] %>%
+df_price[1:150,] %>%
   kable(format = "html", col.names = colnames(df_pris)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
@@ -103,52 +103,30 @@ df_totconsumpcapita[1:150,] %>%
 
 ```{r results = 'asis'}
 
+df_capacity <- df_capac %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_capita <- df_capit %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_primary <- df_prim %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_share <- df_shar %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_consumption <- df_consump %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_cumcap <- df_cumcapac %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_totconsump <- df_totconsumpcapita %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
+df_price <- select(df_price,-c(Entity, Code))
 
-df_capacity <- subset(df_capac, Entity = 'World')
-df_capacity <- df_capacity %>% group_by(Year) %>%
-  summarise(Solar.Capacity=sum(df_capac$Solar.Capacity))
+df <- merge(df_capacity,df_capita, by="Year", all = TRUE)
+df <- merge(df,df_primary,by="Year", all = TRUE)
+df <- merge(df,df_share,by="Year", all = TRUE)
+df <- merge(df,df_consumption,by="Year", all = TRUE)
+df <- merge(df,df_cumcap,by="Year", all = TRUE)
+df <- merge(df,df_price,by="Year", all = TRUE)
+df <- merge(df,df_totconsump,by="Year", all = TRUE)
+df = subset(df, select = -c(Entity.x,Code.x, Entity.y, Code.y) )
+df[is.na(df)] <- 0
 
-df_capita <- subset(df_capit, Entity = 'World')
-# df_capita <- df_capita %>% group_by(Year) %>% 
-#   summarise(Solar.Per.Capita=sum(df_capit$Solar.per.capita..kWh...equivalent.))
-
-df_primary <- subset(df_prim, Entity = 'World')
-# df_primary <- df_primary %>% group_by(Year) %>% 
-#   summarise(Solar.TWh.Equivalent=sum(df_prim$Solar..TWh...equivalent.))
-
-# df_share <- df_shar %>% group_by(Year) %>% 
-#   summarise(Solar.TWh.Equivalent=sum(df_shar$Solar..TWh...equivalent.))
-
-df_consumption <- subset(df_consump, Entity = 'World')
-# df_consumption <- df_consumption %>% group_by(Year) %>% 
-#   summarise(Electricity.consumption.TWh=sum(df_consump$Electricity.from.solar.TWh.))
-
-df_cumcap <- subset(df_cumcapac, Entity = 'World')
-# df_cumcap <- df_cumcap %>% group_by(Year) %>% 
-#   summarise(Cumulative.Capacity = sum(df_cumcap$Solar.Capacity))
-
-df_price <- subset(df_pris, Entity = 'World')
-# df_price <- df_price %>% group_by(Year) %>% 
-#   summarise(Price.PV.Module = sum(df_pris$Solar.PV.Module.Cost..2019.US..per.W.))
-
-df_totconsump <- subset(df_totconsumpcapita, Entity = 'World')
-# df_totconsump <- df_totconsump %>% group_by(Year) %>% 
-#   summarise(Total.Consumption.TWh = sum(df_totconsump$Electricity.consumption.TWh))
-
-
-
-# Merge datasets
-
-df <- merge(df_capacity,df_capita,by="Year")
-df <- merge(df,df_primary,by="Year")
-df <- merge(df,df_share,by="Year")
-df <- merge(df,df_consumption,by="Year")
-df <- merge(df,df_cumcap,by="Year")
-df <- merge(df,df_price,by="Year")
-df <- merge(df,df_totconsump,by="Year")
-df
 
 ```
+
+
+
 
 # Exploratory data analysis
 
