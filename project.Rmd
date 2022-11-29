@@ -38,6 +38,10 @@ library(caret)
 library(car)
 library(kableExtra)
 library(ggpubr)
+library(readxl)
+library(lmtest) 
+library(forecast)
+library(DIMORA)
 
 ```
 
@@ -103,14 +107,16 @@ df_totconsumpcapita[1:150,] %>%
 
 ```{r results = 'asis'}
 
-df_capacity <- df_capac %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_capita <- df_capit %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_primary <- df_prim %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_share <- df_shar %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_consumption <- df_consump %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_cumcap <- df_cumcapac %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_totconsump <- df_totconsumpcapita %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
-df_price <- select(df_price,-c(Entity, Code))
+entity <- 'Spain'
+
+df_capacity <- df_capac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+df_capita <- df_capit %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+df_primary <- df_prim %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+df_share <- df_shar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+df_consumption <- df_consump %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+df_cumcap <- df_cumcapac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+df_totconsump <- df_totconsumpcapita %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+# df_price <- select(df_price,-c(Entity, Code))
 
 df <- merge(df_capacity,df_capita, by="Year", all = TRUE)
 df <- merge(df,df_primary,by="Year", all = TRUE)
@@ -119,7 +125,7 @@ df <- merge(df,df_consumption,by="Year", all = TRUE)
 df <- merge(df,df_cumcap,by="Year", all = TRUE)
 df <- merge(df,df_price,by="Year", all = TRUE)
 df <- merge(df,df_totconsump,by="Year", all = TRUE)
-df = subset(df, select = -c(Entity.x,Code.x, Entity.y, Code.y) )
+
 df[is.na(df)] <- 0
 
 
@@ -134,10 +140,80 @@ df[is.na(df)] <- 0
 # Apply stuff from the lectures
 
 
+```{r results = 'asis'}
+
+str(df)
+
+
+```
+
+
+```{r results = 'asis'}
+
+
+cap_consump <- df$Solar.per.capita..kWh...equivalent[25:57]
+tt<- 1:NROW(cap_consump)
+
+plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh")
+# acf(cap_consump)
+
+```
 
 
 
 
+```{r results = 'asis'}
+
+##fit a linear regression model 
+fit1 <- lm(cap_consump ~ tt)
+summary(fit1)
+
+##plot of the model
+plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh")
+abline(fit1, col=3)
+
+##check the residuals? are they autocorrelated? Test of DW
+dwtest(fit1)
+
+##check the residuals
+resfit1<- residuals(fit1)
+plot(resfit1,xlab="Time", ylab="residuals" )
 
 
+```
+
+
+
+```{r results = 'asis'}
+
+##let us do the same with a linear model for time series, so we transform the data into a ts object
+cap_consump.ts <- ts(cap_consump, frequency = 4)
+ts.plot(cap_consump.ts, type="o")
+
+## we fit a linear model with the tslm function
+fitts<- tslm(cap_consump.ts~trend)
+
+###obviously it gives the same results of the first model
+summary(fitts)
+
+dwtest(fitts)
+
+```
+
+
+
+```{r results = 'asis'}
+
+plot(cumsum(cap_consump), type="b")
+
+```
+
+
+
+```{r results = 'asis'}
+
+bm_cap<-BM(cap_consump,display = T)
+summary(bm_cap)
+
+```
 
