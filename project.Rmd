@@ -264,22 +264,36 @@ lines(pred_bmcap, lwd=2, col=4)
 
 
 ###GBMr1
-GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.1))
-GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.2))
-GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-1))
-GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.8))
-GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-2))
- 
+#GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.1))
+
 
 ######GBMe1
-GBMe1 <- GBM(cap_consump,shock = "exp",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2)) #funcionan varios numeros
+GBMe1 <- GBM(cap_consump,shock = "exp",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2))
 summary(GBMe1)
+
+#GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 31,-0.4,0.9))
+#summary(GBMe2)
+
+GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.4,0.4))
+
+GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
+
+GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
+summary(GBMe2)
 
 pred_GBMe1<- predict(GBMe1, newx=c(1:50))
 pred_GBMe1.inst<- make.instantaneous(pred_GBMe1)
 
 plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
 lines(pred_GBMe1.inst, lwd=2, col=2) 
+
+###
+
+pred_GBMe2<- predict(GBMe2, newx=c(1:50))
+pred_GBMe2.inst<- make.instantaneous(pred_GBMe2)
+
+plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+lines(pred_GBMe2.inst, lwd=2, col=2) 
 
 
 ```
@@ -288,12 +302,11 @@ lines(pred_GBMe1.inst, lwd=2, col=2)
 ```{r results = 'asis'}
 
 ######GGM 
-GGM_cap<- GGM(cap_consump, prelimestimates=c(1.243162e+04, 0.001, 0.01,  2.424655e-05, 3.283666e-01
-                                             ))
+GGM_cap<- GGM(cap_consump, prelimestimates=c(1.243162e+04, 0.01, 0.01,  2.424655e-05, 3.283666e-01))
 summary(GGM_cap)
 
 pred_GGM_cap<- predict(GGM_cap, newx=c(1:60))
-pred_GGM_cap.inst<- make.instantaneous(pred_GGM_tw)
+pred_GGM_cap.inst<- make.instantaneous(pred_GGM_cap)
 
 plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
 lines(pred_GGM_cap.inst, lwd=2, col=2)
@@ -303,23 +316,76 @@ lines(pred_GGM_cap.inst, lwd=2, col=2)
 
 ```{r results = 'asis'}
 
+###Analysis of residuals
+res_GGM_cap<- residuals(GGM_cap)
+acf<- acf(residuals(GGM_cap))
+
+
+fit_GGM_cap<- fitted(GGM_cap)
+fit_GGM_cap_inst<- make.instantaneous(fit_GGM_cap)
+
 
 ```
 
 
 ```{r results = 'asis'}
 
+# Let's begin with Arima
+
+# autoplot(cap_consump)
+
+plot(cap_consump)
+Acf(cap_consump)
+Pacf(cap_consump)
+
 
 ```
 
 
 ```{r results = 'asis'}
-test
+# Fit Arima model
+arima1<- Arima(cap_consump, order=c(2,1, 0))
+fitted(arima1)
+
+# See effect of differenciation 
+diff1<- diff(cap_consump) ##first difference
+diff2<- diff(cap_consump, lag=2)
+tsdisplay(diff1)
+tsdisplay(diff2)
+
+
+# Analyze residuals
+resid1<- residuals(arima1)
+tsdisplay(resid1)
+
+# Plot Arima model
+plot(cap_consump)
+lines(fitted(arima1), col=2)
+
+# Forecast
+for1<- forecast(arima1)
+plot(for1)
 
 ```
 
 
 ```{r results = 'asis'}
+
+# Try autoarima
+auto.a <- auto.arima(cap_consump)
+auto.a
+
+# Plot fitting
+plot(cap_consump)
+lines(fitted(auto.a), col=2)
+
+# Do forecast
+autoplot(forecast(auto.a))
+
+#Check residuals
+checkresiduals(auto.a)
+
+
 
 
 ```
