@@ -314,7 +314,7 @@ lines(pred_GGM_cap.inst, lwd=2, col=2)
 
 
 ```{r results = 'asis'}
-
+test
 
 ```
 
