@@ -21,10 +21,10 @@ options(warn=-1)
 
 ```{r, results="hide", message = FALSE}
 # Installs
-#install.packages("caret")
-#install.packages("car")
-#install.packages("ggplot2")
-#install.packages("devtools")
+# install.packages("caret")
+# install.packages("car")
+# install.packages("ggplot2")
+# install.packages("devtools")
 
 
 # Libraries
@@ -93,7 +93,7 @@ df_cumcapac[1:150,] %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
 
 df_price[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_pris)) %>%
+  kable(format = "html", col.names = colnames(df_price)) %>%
   kable_styling() %>%
   kableExtra::scroll_box(width = "100%", height = "300px")
 
@@ -116,9 +116,9 @@ df_share <- df_shar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_consumption <- df_consump %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_cumcap <- df_cumcapac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_totconsump <- df_totconsumpcapita %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-# df_price <- select(df_price,-c(Entity, Code))
+df_price <- select(df_price,-c(Entity, Code))
 
-df <- merge(df_capacity,df_capita, by="Year", all = TRUE)
+df <- merge(df_capacity,df_capita, by="Year", all = TRUE) #to fill the non existant values with NA
 df <- merge(df,df_primary,by="Year", all = TRUE)
 df <- merge(df,df_share,by="Year", all = TRUE)
 df <- merge(df,df_consumption,by="Year", all = TRUE)
@@ -126,7 +126,7 @@ df <- merge(df,df_cumcap,by="Year", all = TRUE)
 df <- merge(df,df_price,by="Year", all = TRUE)
 df <- merge(df,df_totconsump,by="Year", all = TRUE)
 
-df[is.na(df)] <- 0
+df[is.na(df)] <- 0 #change NA to 0
 
 
 ```
@@ -155,7 +155,7 @@ cap_consump <- df$Solar.per.capita..kWh...equivalent[25:57]
 tt<- 1:NROW(cap_consump)
 
 plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh")
-# acf(cap_consump)
+acf(cap_consump)
 
 ```
 
@@ -204,7 +204,9 @@ dwtest(fitts)
 
 ```{r results = 'asis'}
 
-plot(cumsum(cap_consump), type="b")
+#plot(cap_consump, type="b")
+plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+plot(cumsum(cap_consump), type="b", xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
 
 ```
 
@@ -215,5 +217,109 @@ plot(cumsum(cap_consump), type="b")
 bm_cap<-BM(cap_consump,display = T)
 summary(bm_cap)
 
+###prediction (out-of-sample)
+pred_bmcap<- predict(bm_cap, newx=c(1:50))
+pred.instcap<- make.instantaneous(pred_bmcap)
+
+###plot of fitted model 
+plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.instcap, lwd=2, col=2)
+
 ```
 
+
+
+```{r results = 'asis'}
+
+###we estimate the model with 75% of the data
+bm_cap75<-BM(cap_consump[1:25],display = T)
+summary(bm_cap75)
+
+pred_bmcap75<- predict(bm_cap75, newx=c(1:50))
+pred.instcap75<- make.instantaneous(pred_bmcap75)
+
+plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.instcap75, lwd=2, col=2)
+```
+
+
+
+```{r results = 'asis'}
+
+###Comparison between models (instantaneous)
+###instantaneous
+plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.instcap75, lwd=2, col=2)
+lines(pred.instcap, lwd=2, col=4)
+
+###Comparison between models (cumulative)
+plot(cumsum(cap_consump), type= "b",xlab="Year", ylab="Annual sales",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred_bmcap75, lwd=2, col=2)
+lines(pred_bmcap, lwd=2, col=4)
+
+```
+
+
+```{r results = 'asis'}
+
+
+###GBMr1
+GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.1))
+GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.2))
+GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-1))
+GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.8))
+GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-2))
+ 
+
+######GBMe1
+GBMe1 <- GBM(cap_consump,shock = "exp",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2)) #funcionan varios numeros
+summary(GBMe1)
+
+pred_GBMe1<- predict(GBMe1, newx=c(1:50))
+pred_GBMe1.inst<- make.instantaneous(pred_GBMe1)
+
+plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+lines(pred_GBMe1.inst, lwd=2, col=2) 
+
+
+```
+
+
+```{r results = 'asis'}
+
+######GGM 
+GGM_cap<- GGM(cap_consump, prelimestimates=c(1.243162e+04, 0.001, 0.01,  2.424655e-05, 3.283666e-01
+                                             ))
+summary(GGM_cap)
+
+pred_GGM_cap<- predict(GGM_cap, newx=c(1:60))
+pred_GGM_cap.inst<- make.instantaneous(pred_GGM_tw)
+
+plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+lines(pred_GGM_cap.inst, lwd=2, col=2)
+
+```
+
+
+```{r results = 'asis'}
+
+
+```
+
+
+```{r results = 'asis'}
+
+
+```
+
+
+```{r results = 'asis'}
+
+
+```
+
+
+```{r results = 'asis'}
+
+
+```
