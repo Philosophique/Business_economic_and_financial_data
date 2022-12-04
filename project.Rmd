@@ -16,6 +16,7 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 options(warn=-1)
+
 ```
 
 
@@ -45,7 +46,7 @@ library(DIMORA)
 
 ```
 
-
+# Read and prepare datasets
 
 ```{r results = 'asis'}
 # Read the dataset
@@ -132,33 +133,35 @@ df[is.na(df)] <- 0 #change NA to 0
 ```
 
 
-
-
-# Exploratory data analysis
-
-
 # Apply stuff from the lectures
 
+Check some info of the data
 
 ```{r results = 'asis'}
 
 str(df)
 
-
 ```
 
 
-```{r results = 'asis'}
+Take the column we want to study in depth (per capita solar energy consumption in Spain)
 
+```{r results = 'asis'}
 
 cap_consump <- df$Solar.per.capita..kWh...equivalent[25:57]
 tt<- 1:NROW(cap_consump)
 
+```
+
+Plot the data and the autocorrelation plot.
+
+```{r results = 'asis'}
+
 plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh")
 acf(cap_consump)
 
-```
 
+```
 
 
 
@@ -210,7 +213,9 @@ plot(cumsum(cap_consump), type="b", xlab="Year", ylab="Solar per capita kWh",  p
 
 ```
 
+# Bass Model
 
+Let's now fit a Bass model.
 
 ```{r results = 'asis'}
 
@@ -227,22 +232,45 @@ lines(pred.instcap, lwd=2, col=2)
 
 ```
 
-
+Predict (out-of-sample).
 
 ```{r results = 'asis'}
 
-###we estimate the model with 75% of the data
-bm_cap75<-BM(cap_consump[1:25],display = T)
-summary(bm_cap75)
+pred_bmcap<- predict(bm_cap, newx=c(1:50))
+pred.instcap<- make.instantaneous(pred_bmcap)
 
-pred_bmcap75<- predict(bm_cap75, newx=c(1:50))
-pred.instcap75<- make.instantaneous(pred_bmcap75)
+```
 
+Plot of fitted model
+
+```{r results = 'asis'}
+
+### 
 plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
-lines(pred.instcap75, lwd=2, col=2)
+lines(pred.instcap, lwd=2, col=2)
+
 ```
 
 
+Let's see what happens when we estimate the model with 75 percent of the data.
+
+```{r results = 'asis'}
+
+bm_cap75<-BM(cap_consump[1:25],display = T)
+summary(bm_cap75)
+
+# prediction
+pred_bmcap75<- predict(bm_cap75, newx=c(1:50))
+pred.instcap75<- make.instantaneous(pred_bmcap75)
+
+# plotting
+plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.instcap75, lwd=2, col=2)
+
+```
+
+
+Plot both models to compare them. 
 
 ```{r results = 'asis'}
 
@@ -259,6 +287,7 @@ lines(pred_bmcap, lwd=2, col=4)
 
 ```
 
+# Generalized bass model
 
 ```{r results = 'asis'}
 
@@ -268,36 +297,37 @@ lines(pred_bmcap, lwd=2, col=4)
 
 
 ######GBMe1
-GBMe1 <- GBM(cap_consump,shock = "exp",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2))
-summary(GBMe1)
+# GBMe1 <- GBM(cap_consump,shock = "exp",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2))
+# summary(GBMe1)
 
 #GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 31,-0.4,0.9))
 #summary(GBMe2)
 
-GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.4,0.4))
-
-GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
-
-GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
-summary(GBMe2)
-
-pred_GBMe1<- predict(GBMe1, newx=c(1:50))
-pred_GBMe1.inst<- make.instantaneous(pred_GBMe1)
-
-plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
-lines(pred_GBMe1.inst, lwd=2, col=2) 
+# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.4,0.4))
+# 
+# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
+# 
+# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
+# summary(GBMe2)
+# 
+# pred_GBMe1<- predict(GBMe1, newx=c(1:50))
+# pred_GBMe1.inst<- make.instantaneous(pred_GBMe1)
+# 
+# plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+# lines(pred_GBMe1.inst, lwd=2, col=2) 
 
 ###
 
-pred_GBMe2<- predict(GBMe2, newx=c(1:50))
-pred_GBMe2.inst<- make.instantaneous(pred_GBMe2)
-
-plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
-lines(pred_GBMe2.inst, lwd=2, col=2) 
-
+# pred_GBMe2<- predict(GBMe2, newx=c(1:50))
+# pred_GBMe2.inst<- make.instantaneous(pred_GBMe2)
+# 
+# plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+# lines(pred_GBMe2.inst, lwd=2, col=2) 
+# 
 
 ```
 
+# GGM
 
 ```{r results = 'asis'}
 
@@ -328,6 +358,8 @@ fit_GGM_cap_inst<- make.instantaneous(fit_GGM_cap)
 ```
 
 
+# Arima
+
 ```{r results = 'asis'}
 
 # Let's begin with Arima
@@ -337,7 +369,6 @@ fit_GGM_cap_inst<- make.instantaneous(fit_GGM_cap)
 plot(cap_consump)
 Acf(cap_consump)
 Pacf(cap_consump)
-
 
 ```
 
@@ -384,6 +415,207 @@ autoplot(forecast(auto.a))
 
 #Check residuals
 checkresiduals(auto.a)
+
+
+
+
+```
+
+
+
+```{r results = 'asis'}
+# Let's see the influence of the price of PV modules
+
+price <- df$Solar.PV.Module.Cost..2019.US..per.W.[25:57]
+plot(price)
+acf(price)
+pacf(price)
+
+
+# armax1 <- Arima(cap_consump, xreg = price, order = c(1,1,1))
+armax1 <- auto.arima(cap_consump, xreg = price)
+summary(armax1)
+res1 <- residuals(armax1)
+Acf(res1)
+
+fitted(armax1)
+plot(cap_consump)
+lines(fitted(armax1), col = 2)
+
+
+```
+
+
+
+```{r results = 'asis'}
+
+# Let's see the influence of the capacity of PV modules
+
+capacity <- df$Solar.Capacity.x[25:57]
+capacity.ts <- ts(capacity)
+# ts.plot(capacity.ts, type="o")
+
+plot(capacity)
+acf(capacity)
+pacf(capacity)
+
+armax1 <- auto.arima(cap_consump, xreg = capacity)
+summary(armax1)
+res1 <- residuals(armax1)
+Acf(res1)
+
+fitted(armax1)
+plot(cap_consump)
+lines(fitted(armax1), col = 2)
+
+
+```
+
+
+
+```{r results = 'asis'}
+
+mod <- tslm(cap_consump.ts~trend+capacity.ts)
+summary(mod)
+
+fitted(mod)
+plot(cap_consump.ts)
+lines(fitted(mod), col = 2)
+
+# Analysis of residuals - autoccorelation?
+plot(residuals(mod))
+dw <- dwtest(mod, alt="two.sided")
+tsdisplay(residuals(mod))
+
+aar <- auto.arima(residuals(mod))
+fitted(aar)
+
+plot(cap_consump.ts)
+lines(fitted(mod)+fitted(aar), col = 3)
+
+```
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+```{r results = 'asis'}
 
 
 
