@@ -190,7 +190,7 @@ plot(resfit1,xlab="Time", ylab="residuals" )
 ```{r results = 'asis'}
 
 ##let us do the same with a linear model for time series, so we transform the data into a ts object
-cap_consump.ts <- ts(cap_consump, frequency = 4)
+cap_consump.ts <- ts(cap_consump)
 ts.plot(cap_consump.ts, type="o")
 
 ## we fit a linear model with the tslm function
@@ -292,29 +292,17 @@ lines(pred_bmcap, lwd=2, col=4)
 ```{r results = 'asis'}
 
 
-###GBMr1
-#GBMr1_cap <- GBM(cap_consump,shock = "rett",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 15,32,-0.1))
-
-
-######GBMe1
-# GBMe1 <- GBM(cap_consump,shock = "exp",nshock = 1,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2))
-# summary(GBMe1)
-
-#GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 31,-0.4,0.9))
-#summary(GBMe2)
-
-# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.4,0.4))
 # 
-# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
+GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
 # 
-# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
+GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
 # summary(GBMe2)
-# 
-# pred_GBMe1<- predict(GBMe1, newx=c(1:50))
-# pred_GBMe1.inst<- make.instantaneous(pred_GBMe1)
-# 
-# plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
-# lines(pred_GBMe1.inst, lwd=2, col=2) 
+
+
+GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 19, -0.1,0.2, 29,0.2,0.4))
+
+# Try with three shocks
+# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 3,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 18,-0.6,0.3, 21, -0.4,0.4, 29,0.38,0.5))
 
 ###
 
@@ -353,7 +341,6 @@ acf<- acf(residuals(GGM_cap))
 
 fit_GGM_cap<- fitted(GGM_cap)
 fit_GGM_cap_inst<- make.instantaneous(fit_GGM_cap)
-
 
 ```
 
