@@ -20,6 +20,7 @@ options(warn=-1)
 ```
 
 
+
 ```{r, results="hide", message = FALSE}
 # Installs
 # install.packages("caret")
@@ -43,6 +44,9 @@ library(readxl)
 library(lmtest) 
 library(forecast)
 library(DIMORA)
+library(reshape2)
+library(zoo)
+
 
 ```
 
@@ -139,7 +143,7 @@ Check some info of the data
 
 ```{r results = 'asis'}
 
-str(df)
+str(df) #str() is an alternative to summary() but more compact
 
 ```
 
@@ -148,7 +152,7 @@ Take the column we want to study in depth (per capita solar energy consumption i
 
 ```{r results = 'asis'}
 
-cap_consump <- df$Solar.per.capita..kWh...equivalent[25:57]
+cap_consump <- df$Solar.per.capita..kWh...equivalent[25:57] #25 because first data start there
 tt<- 1:NROW(cap_consump)
 
 ```
@@ -157,8 +161,8 @@ Plot the data and the autocorrelation plot.
 
 ```{r results = 'asis'}
 
-plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh")
-acf(cap_consump)
+plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh") #from 1989 to 2021
+acf(cap_consump) #strong correlation with lag values, correlation is negative after 10 years.
 
 
 ```
@@ -167,7 +171,7 @@ acf(cap_consump)
 
 ```{r results = 'asis'}
 
-##fit a linear regression model 
+##fit a linear regression model           (not sur if useful method)
 fit1 <- lm(cap_consump ~ tt)
 summary(fit1)
 
@@ -489,6 +493,45 @@ lines(fitted(mod)+fitted(aar), col = 3)
 
 
 ```{r results = 'asis'}
+#Inpecting if the installed solar energy capacity of Spain is influenced by the one of another country.
+
+df_capac_transformed <- df_capac
+
+#Create one columns per country, with years as row and solar capacity as value
+df_capac_transformed <-  dcast(df_capac_transformed, Year ~ Entity) 
+
+#remove all white space in name columns
+names(df_capac_transformed) <- gsub(" ", ".", names(df_capac_transformed))
+
+#Keep only countries
+df_capac_transformed <- df_capac_transformed %>% select(-c("Africa.(BP)", "Asia", "Asia.Pacific.(BP)", "CIS.(BP)","Europe", "Europe.(BP)", "High-income.countries", "Lower-middle-income.countries", "Middle.East.(BP)", "North.America.(BP)", "Other.Africa.(BP)", "Other.Asia.Pacific.(BP)", "Other.CIS.(BP)", "Other.Europe.(BP)", "Other.Middle.East.(BP)", "Other.South.and.Central.America.(BP)", "South.and.Central.America.(BP)", "United.Arab.Emirates", "North.America", "South.Africa", "Upper-middle-income.countries", "World", "Oceania" ))
+
+
+str((df_capac_transformed))
+df_capac_transformed[is.na(df_capac_transformed)] <- 0 #Convert NA to 0
+
+#Convert df_capac_tansformed to a time series
+#df_capac_transformed.zoo <- read.zoo(df_capac_transformed)
+#df_capac_transformed.ts <- as.ts(df_capac_transformed.zoo) 
+
+#Using Pearson correlation, Spain vs all
+cor_spain_vs_all <- cor(df_capac_transformed[ , colnames(df_capac_transformed) != "Spain"], df_capac_transformed$Spain)
+cor_spain_vs_all #Portugal with 0.9449656, Belgium 0.9423068 and Australia 0.9409159 are the country with higher Pearson correlation. Lets look at cross-correlation function (using lagged values of these countrie to predict current value of Spain)
+
+ccf_spain_portugal <- ccf(df_capac_transformed$Portugal, df_capac_transformed$Spain,26) 
+
+ccf_spain_belgium <- ccf(df_capac_transformed$Belgium, df_capac_transformed$Spain,26)
+
+ccf_spain_australia <- ccf(df_capac_transformed$Australia, df_capac_transformed$Spain,26)
+#from correlogram plot, it doesnt seems like the spending of any of theses three countries in solar capacity leads to en increase in spending in solar capacity for spain. They are correlatated, but the lagged values of theses three countries doesnt have a impact of current value of Spain, and it seems that is might be the opposite. 
+
+
+
+#plotting Cross correlation function of every countries againts spain to see if we can see if some countries spedind leads to spain spending. I am not able to plot with the columns.
+ccf_spain_vs_all <- sapply(df_capac_transformed, function(col_names) ccf(col_names,df_capac_transformed$Spain,26))
+#from all correlogram, no lagged values of countries seems to influence spain spending.
+
+
 
 
 
@@ -500,9 +543,11 @@ lines(fitted(mod)+fitted(aar), col = 3)
 
 
 ```{r results = 'asis'}
+#Analyszing relationship between Installed solar energy capacity and solar PV modul price
 
+df_price_cap <- df[32:57,] %>% select(Year, Solar.Capacity.x, Solar.PV.Module.Cost..2019.US..per.W.)
 
-
+#next step I will do: perform test that we have seen in class and labs and similar to what Luis/Laia have done previously.
 
 ```
 
