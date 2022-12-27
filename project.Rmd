@@ -26,7 +26,7 @@ options(warn=-1)
 # install.packages("caret")
 # install.packages("car")
 # install.packages("ggplot2")
-# install.packages("devtools")
+# install.packages("devtools")  
 
 
 # Libraries
@@ -57,73 +57,93 @@ library(zoo)
 file_path <- getwd()
 paste(file_path)
 
-df_capac <- read.csv(paste0(file_path, "/installed-solar-PV-capacity.csv"),header=TRUE)
-df_capit <- read.csv(paste0(file_path, "/per-capita-solar.csv"),header=TRUE)
-df_prim <- read.csv(paste0(file_path, "/primary-energy-consumption-from-solar.csv"),header=TRUE)
-df_shar <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
-df_consump <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
-df_cumcapac <- read.csv(paste0(file_path, "/solar-pv-cumulative-capacity.csv"),header=TRUE)
+
+# Per capita energy consumption from solar
+df_capit_solar <- read.csv(paste0(file_path, "/per-capita-solar.csv"),header=TRUE)
+# Solar PV module prices
 df_price <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
-df_totconsumpcapita <- read.csv(paste0(file_path, "/per-capita-energy.csv"), header=TRUE)
+# Share of electricity production from solar
+df_shar <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
+# Installed solar energy capacity
+df_capac <- read.csv(paste0(file_path, "/installed-solar-PV-capacity.csv"),header=TRUE)
+# Per capita energy consumption from nuclear
+df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-nuclear.csv"),header=TRUE)
+# Per capita energy consumption from wind
+df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-wind.csv"),header=TRUE)
+# Per capita energy consumption from fossil
+df_capit_nuclear <- read.csv(paste0(file_path, "/fossil-fuels-per-capita.csv"),header=TRUE)
+# Per capita energy consumption from oil
+df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-oil.csv"),header=TRUE)
+# Per capita energy consumption from gas
+df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-gas.csv"),header=TRUE)
+# Per capita energy consumption from coal
+df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-coal.csv"),header=TRUE)
 
 
-df_capac[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_capac)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_capit[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_capit)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_prim[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_prim)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_shar[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_shar)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_consump[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_consump)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_cumcapac[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_cumcapac)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_price[1:150,] %>%
-  kable(format = "html", col.names = colnames(df_price)) %>%
-  kable_styling() %>%
-  kableExtra::scroll_box(width = "100%", height = "300px")
-
-df_totconsumpcapita[1:150,] %>% 
-  kable(format = "html", col.names = colnames(df_totconsumpcapita)) %>% 
-  kable_styling() %>% 
-  kableExtra::scroll_box(width = "100%", height = "300ppx")
+# df_capac[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_capac)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_capit[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_capit)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_prim[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_prim)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_shar[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_shar)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_consump[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_consump)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_cumcapac[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_cumcapac)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_price[1:150,] %>%
+#   kable(format = "html", col.names = colnames(df_price)) %>%
+#   kable_styling() %>%
+#   kableExtra::scroll_box(width = "100%", height = "300px")
+# 
+# df_totconsumpcapita[1:150,] %>% 
+#   kable(format = "html", col.names = colnames(df_totconsumpcapita)) %>% 
+#   kable_styling() %>% 
+#   kableExtra::scroll_box(width = "100%", height = "300ppx")
 
 ```
 
 
 ```{r results = 'asis'}
 
-entity <- 'Spain'
+entity_spain <- 'Spain'
+
 
 df_capacity <- df_capac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_capita <- df_capit %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-df_primary <- df_prim %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+
 df_share <- df_shar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_consumption <- df_consump %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_cumcap <- df_cumcapac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_totconsump <- df_totconsumpcapita %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+
+
+df_share <- df_shar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 df_price <- select(df_price,-c(Entity, Code))
 
-df <- merge(df_capacity,df_capita, by="Year", all = TRUE) #to fill the non existant values with NA
+
+
+
+df <- merge(df_capacity,df_capita, by="Year", all = TRUE) #to fill the non existent values with NA
 df <- merge(df,df_primary,by="Year", all = TRUE)
 df <- merge(df,df_share,by="Year", all = TRUE)
 df <- merge(df,df_consumption,by="Year", all = TRUE)
@@ -132,6 +152,9 @@ df <- merge(df,df_price,by="Year", all = TRUE)
 df <- merge(df,df_totconsump,by="Year", all = TRUE)
 
 df[is.na(df)] <- 0 #change NA to 0
+
+# Change names of columns
+colnames(df) <- c("pv.module.price", "pv.module.capacity", "installed.energy.capacity", "share.prod.from.solar")
 
 
 ```
