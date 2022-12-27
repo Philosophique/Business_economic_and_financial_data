@@ -46,8 +46,6 @@ library(forecast)
 library(DIMORA)
 library(reshape2)
 library(zoo)
-library(sm)
-library(splines)
 
 
 ```
@@ -61,102 +59,79 @@ paste(file_path)
 
 
 # Per capita energy consumption from solar
-df_capit_solar <- read.csv(paste0(file_path, "/per-capita-solar.csv"),header=TRUE)
+df_capita_solar <- read.csv(paste0(file_path, "/per-capita-solar.csv"),header=TRUE)
 # Solar PV module prices
 df_price <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
 # Share of electricity production from solar
-df_shar <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
+df_share <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
 # Installed solar energy capacity
-df_capac <- read.csv(paste0(file_path, "/installed-solar-PV-capacity.csv"),header=TRUE)
+df_capacity <- read.csv(paste0(file_path, "/installed-solar-PV-capacity.csv"),header=TRUE)
 # Per capita energy consumption from nuclear
-df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-nuclear.csv"),header=TRUE)
+df_capita_nuclear <- read.csv(paste0(file_path, "/per-capita-nuclear.csv"),header=TRUE)
 # Per capita energy consumption from wind
-df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-wind.csv"),header=TRUE)
+df_capita_wind <- read.csv(paste0(file_path, "/per-capita-wind.csv"),header=TRUE)
 # Per capita energy consumption from fossil
-df_capit_nuclear <- read.csv(paste0(file_path, "/fossil-fuels-per-capita.csv"),header=TRUE)
+df_capita_fossil <- read.csv(paste0(file_path, "/fossil-fuels-per-capita.csv"),header=TRUE)
 # Per capita energy consumption from oil
-df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-oil.csv"),header=TRUE)
+df_capita_oil <- read.csv(paste0(file_path, "/per-capita-oil.csv"),header=TRUE)
 # Per capita energy consumption from gas
-df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-gas.csv"),header=TRUE)
+df_capita_gas <- read.csv(paste0(file_path, "/per-capita-gas.csv"),header=TRUE)
 # Per capita energy consumption from coal
-df_capit_nuclear <- read.csv(paste0(file_path, "/per-capita-coal.csv"),header=TRUE)
+df_capita_coal <- read.csv(paste0(file_path, "/coal-consumption-per-capita.csv"),header=TRUE)
 
 
-# df_capac[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_capac)) %>%
+# df_capacity[1:50,] %>%
+#   kable(format = "html", col.names = colnames(df_capacity)) %>%
 #   kable_styling() %>%
 #   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_capit[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_capit)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_prim[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_prim)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_shar[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_shar)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_consump[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_consump)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_cumcapac[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_cumcapac)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_price[1:150,] %>%
-#   kable(format = "html", col.names = colnames(df_price)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
-# 
-# df_totconsumpcapita[1:150,] %>% 
-#   kable(format = "html", col.names = colnames(df_totconsumpcapita)) %>% 
-#   kable_styling() %>% 
-#   kableExtra::scroll_box(width = "100%", height = "300ppx")
+
 
 ```
 
 
 ```{r results = 'asis'}
 
-entity_spain <- 'Spain'
-
-
-df_capacity <- df_capac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-df_capita <- df_capit %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-
-df_share <- df_shar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-df_consumption <- df_consump %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-df_cumcap <- df_cumcapac %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-df_totconsump <- df_totconsumpcapita %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-
-
-df_share <- df_shar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
-df_price <- select(df_price,-c(Entity, Code))
+entity <- 'Spain'
 
 
 
+share <- df_share %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+price <- select(df_price,-c(Entity, Code))
+capacity <- df_capacity %>% filter(Entity == entity) %>% select(-c(Entity, Code))
 
-df <- merge(df_capacity,df_capita, by="Year", all = TRUE) #to fill the non existent values with NA
-df <- merge(df,df_primary,by="Year", all = TRUE)
-df <- merge(df,df_share,by="Year", all = TRUE)
-df <- merge(df,df_consumption,by="Year", all = TRUE)
-df <- merge(df,df_cumcap,by="Year", all = TRUE)
-df <- merge(df,df_price,by="Year", all = TRUE)
-df <- merge(df,df_totconsump,by="Year", all = TRUE)
+capita_solar_spain <- df_capita_solar %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+capita_nuclear <- df_capita_nuclear %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+capita_wind <- df_capita_wind %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+capita_fossil <- df_capita_fossil %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+capita_gas <- df_capita_gas %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+capita_oil <- df_capita_oil %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+capita_coal <- df_capita_coal %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+
+capita_solar_germany <- df_capita_solar %>% filter(Entity == 'Germany') %>% select(-c(Entity, Code))
+capita_solar_usa <- df_capita_solar %>% filter(Entity == 'United States') %>% select(-c(Entity, Code))
+capita_solar_china <- df_capita_solar %>% filter(Entity == 'China') %>% select(-c(Entity, Code))
+
+
+
+
+
+df <- merge(share, capacity, by="Year", all = TRUE) #to fill the non existent values with NA
+df <- merge(df,price,by="Year", all = TRUE)
+df <- merge(df,capita_solar_spain,by="Year", all = TRUE)
+df <- merge(df,capita_nuclear,by="Year", all = TRUE)
+df <- merge(df,capita_wind,by="Year", all = TRUE)
+df <- merge(df,capita_coal,by="Year", all = TRUE)
+df <- merge(df,capita_fossil,by="Year", all = TRUE)
+df <- merge(df,capita_gas,by="Year", all = TRUE)
+df <- merge(df,capita_oil,by="Year", all = TRUE)
+df <- merge(df,capita_solar_germany,by="Year", all = TRUE)
+df <- merge(df,capita_solar_usa,by="Year", all = TRUE)
+df <- merge(df,capita_solar_china,by="Year", all = TRUE)
 
 df[is.na(df)] <- 0 #change NA to 0
 
-# Change names of columns
-colnames(df) <- c("pv.module.price", "pv.module.capacity", "installed.energy.capacity", "share.prod.from.solar")
+# # # Change names of columns
+colnames(df) <- c("Year", "Share.from.solar" ,"PV.capacity", "PV.price", "Capita.solar.spain", "Capita.nuclear", "Capita.wind", "Capita.coal", "Capita.fossil", "Capita.gas", "Capita.oil", "Capita.solar.germany", "Capita.solar.usa", "Capita.solar.china")
 
 
 ```
@@ -447,7 +422,6 @@ checkresiduals(auto.a)
 
 price <- df$Solar.PV.Module.Cost..2019.US..per.W.[25:57]
 plot(price)
-plot(cumsum(price))
 acf(price)
 pacf(price)
 
@@ -476,7 +450,6 @@ capacity.ts <- ts(capacity)
 # ts.plot(capacity.ts, type="o")
 
 plot(capacity)
-plot(cumsum(capacity))
 acf(capacity)
 pacf(capacity)
 
@@ -558,6 +531,11 @@ ccf_spain_australia <- ccf(df_capac_transformed$Australia, df_capac_transformed$
 ccf_spain_vs_all <- sapply(df_capac_transformed, function(col_names) ccf(col_names,df_capac_transformed$Spain,26))
 #from all correlogram, no lagged values of countries seems to influence spain spending.
 
+
+
+
+
+
 ```
 
 
@@ -567,170 +545,13 @@ ccf_spain_vs_all <- sapply(df_capac_transformed, function(col_names) ccf(col_nam
 ```{r results = 'asis'}
 #Analyszing relationship between Installed solar energy capacity and solar PV modul price
 
-df_price_cap <- df[32:57,] %>% select(Year, Solar.Capacity.x, Solar.PV.Module.Cost..2019.US..per.W.) ##[32:55] to avoid 0 values of df_price
+df_price_cap <- df[32:57,] %>% select(Year, Solar.Capacity.x, Solar.PV.Module.Cost..2019.US..per.W.)
 
-#Creat variable time and variable to not affect df_price_cap
-t <- 1:NROW(df_price_cap)
-df_p_c <- df_price_cap
-
-#make plot
-plot(t, df_p_c$Solar.Capacity.x, xlab = "Time", ylab = "Solar Capacity")
-plot(t, df_p_c$Solar.PV.Module.Cost..2019.US..per.W., xlab = "Time", ylab = "Solar PV Price")
-
-ggplot(df_p_c, aes(t)) +                    # basic graphical object
-  geom_line(aes(y=df_p_c$Solar.Capacity.x, colour="Capacity")) +
-  geom_line(aes(y=df_p_c$Solar.PV.Module.Cost..2019.US..per.W., colour="Price"))+
-  scale_colour_manual("", 
-                      breaks = c("Capacity", "Price"),
-                      values = c("Capacity"="green", "Price"="red")) +
-  xlab(" ") +
-  scale_y_continuous("Amount", limits = c(0,10)) + 
-  labs(title="Years")
-
-#acf
-acf(df_p_c,15)
-ccf(df_p_c$Solar.Capacity.x, df_p_c$Solar.PV.Module.Cost..2019.US..per.W.,15)
-
-#Fit linear regression model
-fitcc <- lm(df_p_c$Solar.PV.Module.Cost..2019.US..per.W.~ df_p_c$Solar.Capacity.x, df_p_c)
-summary(fitcc)
-#summary analysis: Residual: average price of 4.34 for Solar PV modul. For an increase of 1 gigawatts, the price of PV modul drop of 0.50241usd$ per watts with a variation of 0.06389usd$ per watts. T-value significantly bigger than zero and their standard-errors, indicating that the coefficients are relatively bigger enough from their standor-errors. P-value smaller than 5% and three start, thus p-value significant enough to reject null hypothesis which mean there is a relationship between solar capacity and solar PV modul price. The residual standard error is 1.115, which represent 1.115/4.34312= 25.6% deviation error. R-squared of 0.7204, which mean that 72% of the variance of the solar PV modul price can be described by the solar capacity. F-Statistic larger than 1 significantly for 24 DF, meaning strong indication we can reject null hypothesis of no relationship.
-
-
-##plot of the model
-plot(df_p_c$Solar.Capacity.x, df_p_c$Solar.PV.Module.Cost..2019.US..per.W., xlab="Solar Capacity", ylab="Solar PV Price")
-abline(fitcc, col=3) #The abline() function can be used to add vertical,
-                     #horizontal or regression lines to plot.
-
-##check the residuals? are they autocorrelated? Test of DW
-dwtest(fitcc) #reject null hypothesis, thus they are autocorrelated.
-
-##check the residuals
-resfitcc<- residuals(fitcc) 
-plot(resfitcc,xlab="Solar Capacity", ylab="residuals" )
-
-#I dont perform BM, GBM, GGM, UCRCD since the two variable aren't in competition. Is that OK ?
-
-
-#Local regression
-y <-  df_p_c$Solar.PV.Module.Cost..2019.US..per.W.
-x <-  df_p_c$Solar.Capacity.x
-
-plot(x,y, xlab="Solar capacity", ylab="Solar PV modul price")
-
-sm.regression(x, y, h= 10, add= T)
-
-#lets increase the number of points where the function is calculated
-sm.regression(x, y, h= 10, add= T, ngrid=200,col=2)
-
-#Trying different value for h: higher h = smoother function.
-sm.regression(x, y,   h = 30, ngrid=200, col=1)
-sm.regression(x, y,   h = 50, add = T, ngrid=200, col=2)
-sm.regression(x, y,   h = 5,  add = T, ngrid=200, col=3)
-sm.regression(x, y,   h = 1,  add = T, col=3, ngrid=200)
-
-#We add variability bands
-sm.regression(x, y,   h = 30, ngrid=200, display="se")
-
-#Loess (Locally Weighted Least Squares Regression). it uses more local data to estimate our Y variable. But it is also known as a variable bandwidth smoother, in that it uses a 'nearest neighbors' method to smooth.
-
-lo1 <- loess.smooth(x,y) 
-lines(lo1) #default span = 0.75
-
-lo2 <- loess.smooth(x,y,span=0.9)
-lines(lo2,col=2)
-lo3 <- loess.smooth(x,y,span=0.4)
-lines(lo3,col=3)
-
-#another way to perform loess, performs directly the plot
-#default span= 2/3
-scatter.smooth(x,y) 
-scatter.smooth(x,y, span=0.3)
-scatter.smooth(x,y, span=0.3, evaluation=200)
-
-###Regression splines (cubic splines)
-plot(x,y,xlab="Solar capacity", ylab="Solar PV modul price")
-
-#We select and identify the knots 'equispaced'
-xi<-seq(min(x), max(x), length=4)
-
-#2 internal knots
-m1cc<-lm(y ~ bs(x, knots=xi[2:(length(xi)-1)], degree=3))
-
-#Select 200 points
-xxx<-seq(min(x),max(x),length=200)
-
-#Make predictions by using the 'xxx' points
-fit1<-predict(m1cc, data.frame(x=xxx))
-
-plot(x,y,xlab="Solar capacity", ylab="Solar PV modul price")
-lines(xxx,fit1,col=2)
-
-######vertical lin3 to indicate the knots
-abline(v=xi[2], lty=3)
-abline(v=xi[3], lty=3)
-
-###Selecting number of knots
-
-plot(x,y,xlab="Solar capacity", ylab="Solar PV modul price")
-
-# first model with 2 internal knots
-m1cc<-lm(y~bs(x, df=5, degree=3)) 
-fit1<-predict(m1cc, data.frame(x=xxx))
-lines(xxx,fit1,col=4)
-
-# second model with no internal knots 
-m2cc <- lm(y ~ bs(x, df=3, degree=3)) 
-fit2<-predict(m2cc,data.frame(x=xxx))
-#plot(x,y,xlab="engine size", ylab="distance")
-lines(xxx,fit2,col=3)
-
-# Third model with 17 knots 
-m3cc<-lm(y~bs(x,df=20,degree=3))
-fit3<-predict(m3cc,data.frame(x=xxx))
-
-#plot(x,y,xlab="engine size", ylab="distance")
-lines(xxx,fit3,col=2)
-
-###Smoothing splines
-plot(x,y,xlab="engine size", ylab="distance")
-s <- smooth.spline(x,y)
-lines(s)
-
-# Model 1
-plot(x,y,xlab="engine size", ylab="distance")
-s1 <- smooth.spline(x,y, lambda=0.0001)
-lines(s1)
-#
-p1<- predict(s1, x=xxx)
-lines(p1, col=2)
-#
-# Model 2
-s2 <- smooth.spline(x,y, lambda=0.00001)
-p2<- predict(s2, x=xxx)
-lines(p2, col=3)
-#
-# Model 3
-s3 <- smooth.spline(x,y, lambda=0.01)
-p3<- predict(s3, x=xxx)
-lines(p3, col=4)
-
-# Model 4
-s4 <- smooth.spline(x,y, lambda=1)
-p4<- predict(s4, x=xxx)
-lines(p4, col=4)
-
-# Model 5
-s5 <- smooth.spline(x,y, lambda=0.00000001)
-p5<- predict(s5, x=xxx)
-lines(p5, col=4)
-
-
-#Perform GAM ? (Lab 4 end)
+#next step I will do: perform test that we have seen in class and labs and similar to what Luis/Laia have done previously.
 
 ```
 
-## Performing forecast
+
 
 
 
