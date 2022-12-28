@@ -154,8 +154,8 @@ Take the column we want to study in depth (per capita solar energy consumption i
 
 ```{r results = 'asis'}
 
-cap_consump <- df$Solar.per.capita..kWh...equivalent[25:57] #25 because first data start there
-tt<- 1:NROW(cap_consump)
+cap_solar_SP <- df$Capita.solar.spain[25:57] #25 because first data start there
+tt<- 1:NROW(cap_solar_SP)
 
 ```
 
@@ -163,8 +163,8 @@ Plot the data and the autocorrelation plot.
 
 ```{r results = 'asis'}
 
-plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh") #from 1989 to 2021
-acf(cap_consump) #strong correlation with lag values, correlation is negative after 10 years.
+plot(tt, cap_solar_SP, xlab="Time", ylab="Solar per capita kWh") #from 1989 to 2021
+acf(cap_solar_SP) #strong correlation with lag values, correlation is negative after 10 years.
 
 
 ```
@@ -173,12 +173,12 @@ acf(cap_consump) #strong correlation with lag values, correlation is negative af
 
 ```{r results = 'asis'}
 
-##fit a linear regression model           (not sur if useful method)
-fit1 <- lm(cap_consump ~ tt)
+##fit a linear regression model           (not sure if useful method)
+fit1 <- lm(cap_solar_SP ~ tt)
 summary(fit1)
 
 ##plot of the model
-plot(tt, cap_consump, xlab="Time", ylab="Solar per capita kWh")
+plot(tt, cap_solar_SP, xlab="Time", ylab="Solar per capita kWh")
 abline(fit1, col=3)
 
 ##check the residuals? are they autocorrelated? Test of DW
@@ -196,11 +196,11 @@ plot(resfit1,xlab="Time", ylab="residuals" )
 ```{r results = 'asis'}
 
 ##let us do the same with a linear model for time series, so we transform the data into a ts object
-cap_consump.ts <- ts(cap_consump)
-ts.plot(cap_consump.ts, type="o")
+cap_solar_SP.ts <- ts(cap_solar_SP)
+ts.plot(cap_solar_SP.ts, type="o")
 
 ## we fit a linear model with the tslm function
-fitts<- tslm(cap_consump.ts~trend)
+fitts<- tslm(cap_solar_SP.ts~trend)
 
 ###obviously it gives the same results of the first model
 summary(fitts)
@@ -213,9 +213,9 @@ dwtest(fitts)
 
 ```{r results = 'asis'}
 
-#plot(cap_consump, type="b")
-plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
-plot(cumsum(cap_consump), type="b", xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+#plot(cap_solar_SP, type="b")
+plot(cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+plot(cumsum(cap_solar_SP), type="b", xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
 
 ```
 
@@ -225,16 +225,16 @@ Let's now fit a Bass model.
 
 ```{r results = 'asis'}
 
-bm_cap<-BM(cap_consump,display = T)
-summary(bm_cap)
+bm_SP<-BM(cap_solar_SP,display = T)
+summary(bm_SP)
 
 ###prediction (out-of-sample)
-pred_bmcap<- predict(bm_cap, newx=c(1:50))
-pred.instcap<- make.instantaneous(pred_bmcap)
+pred_bm_SP<- predict(bm_SP, newx=c(1:50))
+pred.instcap_SP<- make.instantaneous(pred_bm_SP)
 
 ###plot of fitted model 
-plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
-lines(pred.instcap, lwd=2, col=2)
+plot(cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.instcap_SP, lwd=2, col=2)
 
 ```
 
@@ -242,18 +242,18 @@ Predict (out-of-sample).
 
 ```{r results = 'asis'}
 
-pred_bmcap<- predict(bm_cap, newx=c(1:50))
-pred.instcap<- make.instantaneous(pred_bmcap)
+pred_bm_SP_oos<- predict(bm_SP, newx=c(1:50))
+pred.inst_SP_oos<- make.instantaneous(pred_bm_SP_oos)
 
 ```
 
-Plot of fitted model
+Plot of fitted model with out of sample predictions
 
 ```{r results = 'asis'}
 
 ### 
-plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
-lines(pred.instcap, lwd=2, col=2)
+plot(cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.inst_SP_oos, lwd=2, col=2)
 
 ```
 
@@ -262,16 +262,16 @@ Let's see what happens when we estimate the model with 75 percent of the data.
 
 ```{r results = 'asis'}
 
-bm_cap75<-BM(cap_consump[1:25],display = T)
-summary(bm_cap75)
+bm_SP75<-BM(cap_solar_SP[1:25],display = T)
+summary(bm_SP75)
 
 # prediction
-pred_bmcap75<- predict(bm_cap75, newx=c(1:50))
-pred.instcap75<- make.instantaneous(pred_bmcap75)
+pred_bm_SP75<- predict(bm_SP75, newx=c(1:50))
+pred.inst_SP75<- make.instantaneous(pred_SP75)
 
 # plotting
-plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
-lines(pred.instcap75, lwd=2, col=2)
+plot(cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.inst_SP75, lwd=2, col=2)
 
 ```
 
@@ -282,14 +282,14 @@ Plot both models to compare them.
 
 ###Comparison between models (instantaneous)
 ###instantaneous
-plot(cap_consump, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
-lines(pred.instcap75, lwd=2, col=2)
-lines(pred.instcap, lwd=2, col=4)
+plot(cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred.instcap_SP75, lwd=2, col=2)
+lines(pred.instcap_SP, lwd=2, col=4)
 
 ###Comparison between models (cumulative)
-plot(cumsum(cap_consump), type= "b",xlab="Year", ylab="Annual sales",  pch=16, lty=3, xaxt="n", cex=0.6)
-lines(pred_bmcap75, lwd=2, col=2)
-lines(pred_bmcap, lwd=2, col=4)
+plot(cumsum(cap_solar_SP), type= "b",xlab="Year", ylab="Annual sales",  pch=16, lty=3, xaxt="n", cex=0.6)
+lines(pred_bm_SP75, lwd=2, col=2)
+lines(pred_bm_SP, lwd=2, col=4)
 
 ```
 
@@ -299,25 +299,25 @@ lines(pred_bmcap, lwd=2, col=4)
 
 
  
-# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
+# GBMe2 <- GBM(cap_solar_SP,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.6))
 # 
-# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
+# GBMe2 <- GBM(cap_solar_SP,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 20, -0.1,0.2, 30,0.5,0.7))
 
 
-GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 19, -0.1,0.2, 29,0.2,0.4))
-summary(GBMe2)
+GBM_SP_e2 <- GBM(cap_solar_SP,shock = "exp",nshock = 2,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 19, -0.1,0.2, 29,0.2,0.4))
+summary(GBM_SP_e2)
 
 
 # Try with three shocks
-# GBMe2 <- GBM(cap_consump,shock = "exp",nshock = 3,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 18,-0.6,0.3, 21, -0.4,0.4, 29,0.38,0.5))
+# GBMe2 <- GBM(cap_solar_SP,shock = "exp",nshock = 3,prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 18,-0.6,0.3, 21, -0.4,0.4, 29,0.38,0.5))
 
 ###
 
-pred_GBMe2<- predict(GBMe2, newx=c(1:50))
-pred_GBMe2.inst<- make.instantaneous(pred_GBMe2)
+pred_GBM_SP_e2<- predict(GBM_SP_e2, newx=c(1:50))
+ pred_GBM_SP_e2.inst<- make.instantaneous(pred_GBM_SP_e2)
 
-plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
-lines(pred_GBMe2.inst, lwd=2, col=2)
+plot(cap_solar_SP, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+lines(pred_GBM_SP_e2.inst, lwd=2, col=2)
 
 
 
@@ -329,14 +329,14 @@ lines(pred_GBMe2.inst, lwd=2, col=2)
 ```{r results = 'asis'}
 
 ######GGM 
-GGM_cap<- GGM(cap_consump, prelimestimates=c(1.243162e+04, 0.01, 0.01,  2.424655e-05, 3.283666e-01))
-summary(GGM_cap)
+GGM_SP<- GGM(cap_solar_SP, prelimestimates=c(1.243162e+04, 0.01, 0.01,  2.424655e-05, 3.283666e-01))
+summary(GGM_SP)
 
-pred_GGM_cap<- predict(GGM_cap, newx=c(1:60))
-pred_GGM_cap.inst<- make.instantaneous(pred_GGM_cap)
+pred_GGM_SP<- predict(GGM_SP, newx=c(1:60))
+pred_GGM_SP.inst<- make.instantaneous(pred_GGM_SP)
 
-plot(cap_consump, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
-lines(pred_GGM_cap.inst, lwd=2, col=2)
+plot(cap_solar_SP, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1,60))
+lines(pred_GGM_SP.inst, lwd=2, col=2)
 
 ```
 
@@ -344,12 +344,12 @@ lines(pred_GGM_cap.inst, lwd=2, col=2)
 ```{r results = 'asis'}
 
 ###Analysis of residuals
-res_GGM_cap<- residuals(GGM_cap)
-acf<- acf(residuals(GGM_cap))
+res_GGM_SP<- residuals(GGM_SP)
+acf<- acf(residuals(GGM_SP))
 
 
-fit_GGM_cap<- fitted(GGM_cap)
-fit_GGM_cap_inst<- make.instantaneous(fit_GGM_cap)
+fit_GGM_SP<- fitted(GGM_SP)
+fit_GGM_SP_inst<- make.instantaneous(fit_GGM_SP)
 
 ```
 
@@ -360,23 +360,23 @@ fit_GGM_cap_inst<- make.instantaneous(fit_GGM_cap)
 
 # Let's begin with Arima
 
-# autoplot(cap_consump)
+# autoplot(cap_solar_SP)
 
-plot(cap_consump)
-Acf(cap_consump)
-Pacf(cap_consump)
+plot(cap_solar_SP)
+Acf(cap_solar_SP)
+Pacf(cap_solar_SP)
 
 ```
 
 
 ```{r results = 'asis'}
 # Fit Arima model
-arima1<- Arima(cap_consump, order=c(2,1, 0))
+arima1<- Arima(cap_solar_SP, order=c(2,1, 0))
 fitted(arima1)
 
 # See effect of differenciation 
-diff1<- diff(cap_consump) ##first difference
-diff2<- diff(cap_consump, lag=2)
+diff1<- diff(cap_solar_SP) ##first difference
+diff2<- diff(cap_solar_SP, lag=2)
 tsdisplay(diff1)
 tsdisplay(diff2)
 
@@ -386,7 +386,7 @@ resid1<- residuals(arima1)
 tsdisplay(resid1)
 
 # Plot Arima model
-plot(cap_consump)
+plot(cap_solar_SP)
 lines(fitted(arima1), col=2)
 
 # Forecast
@@ -399,11 +399,11 @@ plot(for1)
 ```{r results = 'asis'}
 
 # Try autoarima
-auto.a <- auto.arima(cap_consump)
+auto.a <- auto.arima(cap_solar_SP)
 auto.a
 
 # Plot fitting
-plot(cap_consump)
+plot(cap_solar_SP)
 lines(fitted(auto.a), col=2)
 
 # Do forecast
@@ -422,20 +422,20 @@ checkresiduals(auto.a)
 ```{r results = 'asis'}
 # Let's see the influence of the price of PV modules
 
-price <- df$Solar.PV.Module.Cost..2019.US..per.W.[25:57]
+price <- df$PV.price[25:57]
 plot(price)
 acf(price)
 pacf(price)
 
 
-# armax1 <- Arima(cap_consump, xreg = price, order = c(1,1,1))
-armax1 <- auto.arima(cap_consump, xreg = price)
+# armax1 <- Arima(cap_solar_SP, xreg = price, order = c(1,1,1))
+armax1 <- auto.arima(cap_solar_SP, xreg = price)
 summary(armax1)
 res1 <- residuals(armax1)
 Acf(res1)
 
 fitted(armax1)
-plot(cap_consump)
+plot(cap_solar_SP)
 lines(fitted(armax1), col = 2)
 
 
@@ -447,7 +447,7 @@ lines(fitted(armax1), col = 2)
 
 # Let's see the influence of the capacity of PV modules
 
-capacity <- df$Solar.Capacity.x[25:57]
+capacity <- df$PV.capacity[25:57]
 capacity.ts <- ts(capacity)
 # ts.plot(capacity.ts, type="o")
 
@@ -455,13 +455,13 @@ plot(capacity)
 acf(capacity)
 pacf(capacity)
 
-armax1 <- auto.arima(cap_consump, xreg = capacity)
+armax1 <- auto.arima(cap_solar_SP, xreg = capacity)
 summary(armax1)
 res1 <- residuals(armax1)
 Acf(res1)
 
 fitted(armax1)
-plot(cap_consump)
+plot(cap_solar_SP)
 lines(fitted(armax1), col = 2)
 
 
@@ -471,11 +471,11 @@ lines(fitted(armax1), col = 2)
 
 ```{r results = 'asis'}
 
-mod <- tslm(cap_consump.ts~trend+capacity.ts)
+mod <- tslm(cap_solar_SP.ts~trend+capacity.ts)
 summary(mod)
 
 fitted(mod)
-plot(cap_consump.ts)
+plot(cap_solar_SP.ts)
 lines(fitted(mod), col = 2)
 
 # Analysis of residuals - autocorelation?
@@ -486,7 +486,7 @@ tsdisplay(residuals(mod))
 aar <- auto.arima(residuals(mod))
 fitted(aar)
 
-plot(cap_consump.ts)
+plot(cap_solar_SP.ts)
 lines(fitted(mod)+fitted(aar), col = 3)
 
 ```
@@ -495,7 +495,7 @@ lines(fitted(mod)+fitted(aar), col = 3)
 
 
 ```{r results = 'asis'}
-#Inpecting if the installed solar energy capacity of Spain is influenced by the one of another country.
+#Inspecting if the installed solar energy capacity of Spain is influenced by the one of another country.
 
 df_capacity_transformed <- df_capacity
 
