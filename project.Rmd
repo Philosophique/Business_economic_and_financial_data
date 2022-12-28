@@ -49,7 +49,9 @@ library(zoo)
 library(sm)
 library(splines)
 library(gam)
-
+library(tree)
+library (gbm)
+library ( randomForest)
 
 ```
 
@@ -81,12 +83,8 @@ df_capita_oil <- read.csv(paste0(file_path, "/per-capita-oil.csv"),header=TRUE)
 df_capita_gas <- read.csv(paste0(file_path, "/per-capita-gas.csv"),header=TRUE)
 # Per capita energy consumption from coal
 df_capita_coal <- read.csv(paste0(file_path, "/coal-consumption-per-capita.csv"),header=TRUE)
-
-
-# df_capacity[1:50,] %>%
-#   kable(format = "html", col.names = colnames(df_capacity)) %>%
-#   kable_styling() %>%
-#   kableExtra::scroll_box(width = "100%", height = "300px")
+# solar power generation
+df_solar_generation <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
 
 
 ```
@@ -113,8 +111,17 @@ capita_coal <- df_capita_coal %>% filter(Entity == entity) %>% select(-c(Entity,
 capita_solar_germany <- df_capita_solar %>% filter(Entity == 'Germany') %>% select(-c(Entity, Code))
 capita_solar_usa <- df_capita_solar %>% filter(Entity == 'United States') %>% select(-c(Entity, Code))
 capita_solar_china <- df_capita_solar %>% filter(Entity == 'China') %>% select(-c(Entity, Code))
+capita_solar_australia <- df_capita_solar %>% filter(Entity == 'Australia') %>% select(-c(Entity, Code))
+capita_solar_india <- df_capita_solar %>% filter(Entity == 'Australia') %>% select(-c(Entity, Code))
+capita_solar_world <- df_capita_solar %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
 
-
+solar_generation_spain <- df_solar_generation %>% filter(Entity == entity) %>% select(-c(Entity, Code))
+solar_generation_germany <- df_solar_generation %>% filter(Entity == 'Germany') %>% select(-c(Entity, Code))
+solar_generation_usa <- df_solar_generation %>% filter(Entity == 'United States') %>% select(-c(Entity, Code))
+solar_generation_china <- df_solar_generation %>% filter(Entity == 'China') %>% select(-c(Entity, Code))
+solar_generation_australia <- df_solar_generation %>% filter(Entity == 'Australia') %>% select(-c(Entity, Code))
+solar_generation_india <- df_solar_generation %>% filter(Entity == 'India') %>% select(-c(Entity, Code))
+solar_generation_world <- df_solar_generation %>% filter(Entity == 'World') %>% select(-c(Entity, Code))
 
 
 
@@ -130,12 +137,84 @@ df <- merge(df,capita_oil,by="Year", all = TRUE)
 df <- merge(df,capita_solar_germany,by="Year", all = TRUE)
 df <- merge(df,capita_solar_usa,by="Year", all = TRUE)
 df <- merge(df,capita_solar_china,by="Year", all = TRUE)
+df <- merge(df,capita_solar_australia,by="Year", all = TRUE)
+df <- merge(df,capita_solar_india,by="Year", all = TRUE)
+df <- merge(df,capita_solar_world,by="Year", all = TRUE)
+df <- merge(df,solar_generation_spain,by="Year", all = TRUE)
+df <- merge(df,solar_generation_germany,by="Year", all = TRUE)
+df <- merge(df,solar_generation_usa,by="Year", all = TRUE)
+df <- merge(df,solar_generation_china,by="Year", all = TRUE)
+df <- merge(df,solar_generation_australia,by="Year", all = TRUE)
+df <- merge(df,solar_generation_india,by="Year", all = TRUE)
+df <- merge(df,solar_generation_world,by="Year", all = TRUE)
 
 df[is.na(df)] <- 0 #change NA to 0
 
 # # # Change names of columns
-colnames(df) <- c("Year", "Share.from.solar" ,"PV.capacity", "PV.price", "Capita.solar.spain", "Capita.nuclear", "Capita.wind", "Capita.coal", "Capita.fossil", "Capita.gas", "Capita.oil", "Capita.solar.germany", "Capita.solar.usa", "Capita.solar.china")
+colnames(df) <- c("Year", "Share.from.solar" ,"PV.capacity", "PV.price", "Capita.solar.spain", "Capita.nuclear", "Capita.wind", "Capita.coal", "Capita.fossil", "Capita.gas", "Capita.oil", "Capita.solar.germany", "Capita.solar.usa", "Capita.solar.china", "Capita.solar.australia", "Capita.solar.india", "Capita.solar.world", "Generation.spain", "Generation.germany", "Generation.usa", "Generation.china", "Generation.australia", "Generation.india", "Generation.world")
 
+
+```
+
+# EDA
+
+```{r results = 'asis'}
+
+df2 <- df[25:57,]
+
+png(file="consumption_countries.png", width=14,height=12,units="cm", res=1200, pointsize=6)
+plot(df2$Year, df2$Capita.solar.india, type = "b", col = 6, ylim = c(1,2000), xlab="Year", ylab="Consumption (kWh)", main="Per capita solar energy consumption", cex.lab = 1.5, cex.main = 1.8)
+lines(df2$Year, df2$Capita.solar.china, type = "b", col = 3)
+lines(df2$Year, df2$Capita.solar.germany, type = "b", col = 1)
+lines(df2$Year, df2$Capita.solar.world, type = "b", col = 7)
+lines(df2$Year, df2$Capita.solar.australia, type = "b", col = 5)
+lines(df2$Year, df2$Capita.solar.spain, type = "b", col = 2)
+lines(df2$Year, df2$Capita.solar.usa, type = "b", col = 4)
+legend(1990, 2000, legend=c("Spain", "China", "Germany", "USA", "Australia",
+                       "India", "World"),
+       col=c(2,3,1,4,5,6,7),  lty = 1, cex=1.5, lwd = 3)
+dev.off()
+
+
+png(file="generation.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(df2$Year, df2$Generation.world, type = "b", col = 7, ylim = c(1,350), xlab="Year", ylab="Generation (TWh)", main= "Solar power generation", cex.lab = 1.5, cex.main = 1.8)
+lines(df2$Year, df2$Generation.china, type = "b", col = 3)
+lines(df2$Year, df2$Generation.germany, type = "b", col = 1)
+lines(df2$Year, df2$Generation.spain, type = "b", col = 2)
+lines(df2$Year, df2$Generation.australia, type = "b", col = 5)
+lines(df2$Year, df2$Generation.india, type = "b", col = 6)
+lines(df2$Year, df2$Generation.usa, type = "b", col = 4)
+legend(1990, 350, legend=c("Spain", "China", "Germany", "USA", "Australia",
+                       "India", "World"),
+       col=c(2,3,1,4,5,6,7), lty = 1, cex=1.5, lwd = 3)
+dev.off()
+
+
+png(file="consumption_energies.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(df2$Year, df2$Capita.solar.spain, type = "o", col = 7, ylim = c(1,25000), xlab="Year",ylab = "Consumption (kWh)", main ="Per capita solar energy consumption", cex.lab = 1.5, cex.main = 1.8)
+lines(df2$Year, df2$Capita.oil, type = "o", col = 2)
+lines(df2$Year, df2$Capita.nuclear, type = "o", col = 3)
+lines(df2$Year, df2$Capita.gas, type = "o", col = 6)
+lines(df2$Year, df2$Capita.wind, type = "o", col = 4)
+lines(df2$Year, df2$Capita.coal, type = "o", col = 1)
+legend("topright", legend=c("Solar", "Wind", "Nuclear", "Coal", "Gas",
+                       "Oil"),
+       col=c(7,4,3,1,6,2),  lty = 1, cex=1, lwd = 3)
+dev.off()
+
+
+
+png(file="prices.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(df2$Year, df2$PV.price, type = "o", col = 7, xlab="Year", ylab = "Price (($/W))", main="Solar PV module prices", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8)
+dev.off()
+
+png(file="capacity.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(df2$Year, df2$PV.capacity, type = "o", col = 7, xlab="Year", ylab = "Capacity (GW)", main ="Solar PV capacity", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8)
+dev.off()
+
+png(file="share.png", width=14,height=12,units="cm", res=1200, pointsize=6)
+plot(df2$Year, df2$PV.capacity, type = "o", col = 7, xlab="Year", ylab = "Share (%)", main ="Share of electricity production from solar", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8)
+dev.off()
 
 ```
 
@@ -1011,6 +1090,9 @@ text(2010, 0.8, pos=4, "Spain vs USA")
 
 ```{r results = 'asis'}
 
+###############################################################################
+# Part of GAM #################################################################
+###############################################################################
 
 set.seed(1)
 data <- df[25:57,]
@@ -1072,35 +1154,39 @@ plot(gamodel, se=T)
 #Perform stepwise selection using gam scope
 #Values for df should be greater than 1, with df=1 implying a linear fit
 
-sc = gam.scope(data.train[,-5], response=5, arg=c("df=2","df=3","df=4")) # arg specifies some degrees of freedom (df = 1 linear fit...)
-gamscope<- step.Gam(gamodel, scope=sc, trace=T)
+sc = gam.scope(data.train[,-5], response=5, smoother = "s", arg=c("df=2","df=3","df=4")) # arg specifies some degrees of freedom (df = 1 linear fit...)
+gamscope<- step.Gam(gamodel, scope=sc, trace=T, direction = c("both"))
+sc2 = gam.scope(data.train[,-5], response=5, smoother = "lo", arg=c("df=2","df=3","df=4")) # loess smoother
+gamscope2<- step.Gam(gamodel, scope=sc2, trace=T, direction = c("both"))
+
+
 summary(gamscope)
 AIC(gamscope)
 
-par(mfrow=c(3,4))
-plot(gamscope, se=T)
+summary(gamscope2)
+AIC(gamscope2)
 
-# if we want to see better some plot (1, 2)
-par(mfrow=c(1,1))
-plot(gamscope, se=T, ask=T)
+# smoothing splines work a bit better than loess
+
+# # par(mfrow=c(3,4))
+# # plot(gamscope, se=T)
+# 
+# # # if we want to see better some plot (1, 2)
+# # par(mfrow=c(1,1))
+# # plot(gamscope, se=T, ask=T)
 
 
 #Prediction
 
 # make some variables factor
 pred.gam <- predict(gamscope,newdata=data.test)     
-dev.gam <- sum((pred.gam-data.test$Capita.solar.spain)^2)
+dev.gam <- sum((pred.gam - data.test$Capita.solar.spain)^2)
 dev.gam
 
-
-```
-
-
-
-
-```{r results = 'asis'}
-
-
+# Predictions of loess smoother
+pred.gam2 <- predict(gamscope2,newdata=data.test)     
+dev.gam2 <- sum((pred.gam2 - data.test$Capita.solar.spain)^2)
+dev.gam2
 
 
 ```
@@ -1110,6 +1196,244 @@ dev.gam
 
 ```{r results = 'asis'}
 
+# Try bulding own gam model
+
+gam.m1 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) ,data= data.train)
+gam.m2 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) , data= data.train)
+gam.m3 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) , data= data.train)
+gam.m4 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear, data= data.train)
+gam.m5 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear + Capita.wind , data= data.train)
+gam.m6 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear + Capita.wind + Capita.oil , data= data.train)
+
+anova (gam.m1 , gam.m2 , gam.m3, gam.m4 , gam.m5 , gam.m6 ,test ="F")
+
+summary(gam.m3)
+AIC(gam.m1)
+AIC(gam.m2)
+AIC(gam.m3)
+AIC(gam.m4)
+AIC(gam.m5)
+AIC(gam.m6)
+AIC(gamscope)
+
+# AIC of scopegam with smoothing splines still lower
+
+```
+
+
+
+
+```{r results = 'asis'}
+
+###############################################################################
+# Part of Gradient boosting################################################################
+###############################################################################
+
+################################
+###### CART #######
+################################
+
+
+#
+set.seed(123)
+cb1 <- sample(1:NROW(data.train),20)
+cb2 <- setdiff(1:NROW(data.train),cb1) #takes those elements of data.train not present in cb1
+
+#splitting
+t1a <- tree(Capita.solar.spain ~ ., data=data.train[cb1,], control=tree.control(nobs=length(cb1), minsize=2, mindev=0))
+
+plot(t1a)
+text(t1a, cex=0.5)
+
+#pruning
+t1b <- prune.tree(t1a, newdata=data.train[cb2,])
+plot(t1b)
+
+
+J <- t1b$size[which.min(t1b$dev)]
+
+t1c <- prune.tree(t1a, best=J)
+
+plot(t1c)
+text(t1c)
+
+plot(t1c)
+text(t1c, pretty=4, cex=0.7)
+
+#
+#Prediction
+
+# make some variables factor
+p.tree <- predict(t1c,newdata=data.test)     
+dev.tree <- sum((p.tree-data.test$Capita.solar.spain)^2)
+dev.tree
+
+
+
+
+```
+
+
+
+
+```{r results = 'asis'}
+################################
+###### Gradient Boosting #######
+################################
+
+# 1 Boosting- 
+boost.capita = gbm(Capita.solar.spain ~ ., data=data.train, 
+                 distribution="gaussian", n.trees=500, interaction.depth=1, bag.fraction = 0.95)
+
+#for the plot
+par(mfrow=c(1,1))
+
+#plot of training error
+plot(boost.capita$train.error, type="l", ylab="training error")
+
+#always decreasing with increasing number of trees
+#
+#
+#relative influence plot
+summary(boost.capita) 
+#let us modify the graphical parameters to obtain a better plot
+#
+#more space on the left
+#
+# default vector of parameters
+mai.old<-par()$mai
+mai.old
+#new vector
+mai.new<-mai.old
+#new space on the left
+mai.new[2] <- 2.5 
+mai.new
+#modify graphical parameters
+par(mai=mai.new)
+summary(boost.capita, las=1) 
+#las=1 horizontal names on y
+summary(boost.capita, las=1, cBar=10) # cbar to say how many variables in the plot
+#cBar defines how many variables
+#back to orginal window
+par(mai=mai.old)
+
+
+
+# test set prediction for every tree (1:500)
+
+
+yhat.boost=predict(boost.capita, newdata=data.test, n.trees=1:500)
+
+# calculate the error for each iteration
+#use 'apply' to perform a 'cycle for' 
+# the first element is the matrix we want to use, 2 means 'by column', 
+#and the third element indicates the function we want to calculate
+
+err = apply(yhat.boost, 2, function(pred) mean((data.test$Capita.solar.spain - pred)^2))
+#
+plot(err, type="l")
+
+# error comparison (train e test)
+plot(boost.capita$train.error, type="l")
+lines(err, type="l", col=2)
+#minimum error in test set
+best=which.min(err)
+abline(v=best, lty=2, col=4)
+#
+min(err) #minimum error
+
+
+# 2 Boosting - Deeper trees
+boost.capita.deeper=gbm(Capita.solar.spain ~ ., data=data.train, 
+                 distribution="gaussian", n.trees=500, interaction.depth=4, bag.fraction = 0.95)
+
+plot(boost.capita.deeper$train.error, type="l")
+
+#par(mai=mai.new)
+
+summary(boost.capita.deeper, las=1, cBar=10)  
+
+#par(mai=mai.old)
+
+yhat.boost=predict(boost.capita.deeper ,newdata=data.test,n.trees=1:500)
+err = apply(yhat.boost,2, function(pred) mean((data.test$Capita.solar.spain-pred)^2))
+plot(err, type="l")
+
+
+plot(boost.capita.deeper$train.error, type="l")
+lines(err, type="l", col=2)
+best=which.min(err)
+abline(v=best, lty=2, col=4)
+min(err)
+
+
+# 3 Boosting - Smaller learning rate 
+
+boost.capita.lr=gbm(Capita.solar.spain ~ ., data=data.train, bag.fraction = 0.95, 
+                 distribution="gaussian", n.trees=500, interaction.depth=1, shrinkage=0.01)
+plot(boost.capita.lr$train.error, type="l")
+
+par(mai=mai.new)
+
+summary(boost.capita.lr, las=1, cBar=10) 
+par(mai=mai.old)
+
+yhat.boost=predict(boost.capita.lr ,newdata=data.test,n.trees=1:500)
+err = apply(yhat.boost,2,function(pred) mean((data.test$Capita.solar.spain-pred)^2))
+plot(err, type="l")
+
+
+plot(boost.capita.lr$train.error, type="l")
+lines(err, type="l", col=2)
+best=which.min(err)
+abline(v=best, lty=2, col=4)
+min(err)
+
+
+# 4 Boosting - combination of previous models
+boost.capita.comb=gbm(Capita.solar.spain ~ . ,data=data.train, bag.fraction = 0.95,
+                 distribution="gaussian",n.trees=5000, interaction.depth=2, shrinkage=0.01)
+
+plot(boost.capita.comb$train.error, type="l")
+#
+
+par(mai=mai.new)
+
+summary(boost.capita.comb, las=1, cBar=10) 
+
+par(mai=mai.old)
+
+yhat.boost=predict(boost.capita.comb ,newdata=data.test,n.trees=1:5000)
+err = apply(yhat.boost, 2, function(pred) mean((data.test$Capita.solar.spain-pred)^2))
+plot(err, type="l")
+
+
+plot(boost.capita.comb$train.error, type="l")
+lines(err, type="l", col=2)
+best=which.min(err)
+abline(v=best, lty=2, col=4)
+min(err)
+err.boost= min(err)
+
+
+boost.capita.comb
+# partial dependence plots
+plot(boost.capita.comb, i.var=1, n.trees = best)
+plot(boost.capita.comb, i.var=2, n.trees = best)
+plot(boost.capita.comb, i.var=3, n.trees = best)
+plot(boost.capita.comb, i.var=c(1,5), n.trees = best) #bivariate (library(viridis) may be necessary)
+#
+plot(boost.capita.comb, i.var=4, n.trees = best) # categorical
+plot(boost.capita.comb, i.var=5, n.trees = best)
+
+plot(boost.capita.comb, i=6, n.trees = best)# categorical
+plot(boost.capita.comb, i=7, n.trees = best) #no effect
+plot(boost.capita.comb, i=8, n.trees = best)# categorical
+plot(boost.capita.comb, i=9, n.trees = best) #no effect
+plot(boost.capita.comb, i=10, n.trees = best)# categorical
+plot(boost.capita.comb, i=11, n.trees = best) #no effect
+plot(boost.capita.comb, i=12, n.trees = best)# categorical
+plot(boost.capita.comb, i=13, n.trees = best) #no effect
 
 
 
@@ -1120,17 +1444,30 @@ dev.gam
 
 ```{r results = 'asis'}
 
+################################
+###### Random Forest ###########
+################################
+
+set.seed (1)
 
 
+# Bagging
+rf.capita= randomForest(Capita.solar.spain ~ ., data=data.train , mtry = 13, importance = TRUE, ntree = 250) # All 13 predictors considered = bagging is done
 
-```
+yhat.rf = predict(rf.capita , newdata = data.test)
+plot( yhat.rf , data.test$Capita.solar.spain)
+abline (0 ,1)
+err <- mean (( yhat.rf - data.test$Capita.solar.spain)^2)
+err
 
 
+# Random Forest
+rf.capita= randomForest(Capita.solar.spain ~ ., data=data.train , mtry = 6, importance = TRUE, ntree = 200)
 
-
-```{r results = 'asis'}
-
-
-
+yhat.rf = predict(rf.capita , newdata = data.test)
+plot( yhat.rf , data.test$Capita.solar.spain)
+abline (0 ,1)
+err <- mean (( yhat.rf - data.test$Capita.solar.spain)^2)
+err
 
 ```
