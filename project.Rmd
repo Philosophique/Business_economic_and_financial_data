@@ -55,7 +55,7 @@ library(gam)
 
 # Read and prepare datasets
 
-```{r results = 'asis'}
+```{r Read dataset, results=}
 # Read the dataset
 file_path <- getwd()
 paste(file_path)
@@ -92,7 +92,7 @@ df_capita_coal <- read.csv(paste0(file_path, "/coal-consumption-per-capita.csv")
 ```
 
 
-```{r df name creation, results=}
+```{r df names creation, results=}
 
 entity <- 'Spain'
 
@@ -172,7 +172,7 @@ acf(cap_solar_SP) #strong correlation with lag values, correlation is negative a
 
 
 
-```{r results = 'asis'}
+```{r Cap_solar_SP linear regression, results=}
 
 ##fit a linear regression model           (not sure if useful method)
 fit1 <- lm(cap_solar_SP ~ tt)
@@ -224,7 +224,7 @@ plot(cumsum(cap_solar_SP), type="b", xlab="Year", ylab="Solar per capita kWh",  
 
 Let's now fit a Bass model.
 
-```{r results = 'asis'}
+```{r cap_solar_SP Base Model (BM), results=}
 
 bm_SP<-BM(cap_solar_SP,display = T)
 summary(bm_SP)
@@ -296,7 +296,7 @@ lines(pred_bm_SP, lwd=2, col=4)
 
 # Generalized bass model
 
-```{r results = 'asis'}
+```{r cap_solar_SP GBM, results=}
 
 
  
@@ -327,7 +327,7 @@ lines(pred_GBM_SP_e2.inst, lwd=2, col=2)
 
 # GGM
 
-```{r results = 'asis'}
+```{r cap_solar_SP GGM, results=}
 
 ######GGM 
 GGM_SP<- GGM(cap_solar_SP, prelimestimates=c(1.243162e+04, 0.01, 0.01,  2.424655e-05, 3.283666e-01))
@@ -357,7 +357,7 @@ fit_GGM_SP_inst<- make.instantaneous(fit_GGM_SP)
 
 # Arima
 
-```{r results = 'asis'}
+```{r cap_solar_SP Arima, results=}
 
 # Let's begin with Arima
 
@@ -397,7 +397,7 @@ plot(for1)
 ```
 
 
-```{r results = 'asis'}
+```{r cap_solar_SP Autoarima, results=}
 
 # Try autoarima
 auto.a <- auto.arima(cap_solar_SP)
@@ -420,7 +420,7 @@ checkresiduals(auto.a)
 
 
 
-```{r results = 'asis'}
+```{r PV modules influence on cap_solar_SP, results=}
 # Let's see the influence of the price of PV modules
 
 price <- df$PV.price[25:57]
@@ -444,7 +444,7 @@ lines(fitted(armax1), col = 2)
 
 
 
-```{r results = 'asis'}
+```{r PV modul capacity influence on cap_solar_SP, results=}
 
 # Let's see the influence of the capacity of PV modules
 
@@ -495,7 +495,7 @@ lines(fitted(mod)+fitted(aar), col = 3)
 
 
 
-```{r results = 'asis'}
+```{r Installed solar capacity of spain vs world, results=}
 #Inspecting if the installed solar energy capacity of Spain is influenced by the one of another country.
 
 df_capacity_transformed <- df_capacity
@@ -545,7 +545,7 @@ ccf_spain_vs_all <- sapply(df_capacity_transformed, function(col_names) ccf(col_
 
 
 
-```{r results = 'asis'}
+```{r Relationship capacity vs PV modul price, results=}
 #Analyszing relationship between Installed solar energy capacity and solar PV modul price
 
 df_price_capacity <- df[32:57,] %>% select(Year, PV.capacity, PV.price) #[32:57] to avoid 0 values of df_price
