@@ -48,6 +48,7 @@ library(reshape2)
 library(zoo)
 library(sm)
 library(splines)
+library(gam)
 
 
 ```
@@ -706,6 +707,85 @@ lines(p5, col=4)
 
 ```{r results = 'asis'}
 
+set.seed(1)
+data <- df[25:57,]
+
+# Check structure and summary of data
+str(data)
+summary(data)
+
+# #transform variable year in format "date"
+# data$Year <- as.Date(data$Year, "%Y")
+
+# Plot histograms of the variables
+par(mfrow=c(4,4))
+for(i in c(1:14)){
+  hist(data[,i], col="orange", main=paste(colnames(data)[i]), xlab="")
+}
+
+# Based on the histograms change some variables to logarithmic?
+
+#Let's check correlations
+par(mfrow=c(1,1))
+corr_coef <- cor(data, use="complete.obs")
+round(corr_coef,2)
+ggcorrplot(corr_coef, hc.order = TRUE, type = "lower", lab = TRUE)
+
+# Train-test split
+train = sample(1:nrow(data), 0.7*nrow(data))
+data.train=data[train ,]
+data.test=data[-train ,]
+
+##########################
+####Linear Model#########
+#########################
+
+# Try full linear model first
+m1 <- lm(Capita.solar.spain ~ ., data=data.train)
+summary(m1)
+
+# Try stepwise regression to reduce the number of features
+m2 <- step(m1, direction="both") # both backward and forward selection together.
+summary(m2)
+AIC(m2)
+
+pred.lm <- predict(m2, newdata=data.test)
+deviance.lm <- sum((pred.lm-data.test$Capita.solar.spain)^2)
+deviance.lm
+
+##########################
+####GAM Model#########
+#########################
+
+#Start with a linear model (df=1)
+gamodel <- gam(Capita.solar.spain ~ ., data=data.train)
+
+#Show the linear effects 
+par(mfrow=c(3,5))
+plot(gamodel, se=T)
+
+#Perform stepwise selection using gam scope
+#Values for df should be greater than 1, with df=1 implying a linear fit
+
+sc = gam.scope(data.train[,-5], response=5, arg=c("df=2","df=3","df=4")) # arg specifies some degrees of freedom (df = 1 linear fit...)
+gamscope<- step.Gam(gamodel, scope=sc, trace=T)
+summary(gamscope)
+AIC(gamscope)
+
+par(mfrow=c(3,4))
+plot(gamscope, se=T)
+
+# if we want to see better some plot (1, 2)
+par(mfrow=c(1,1))
+plot(gamscope, se=T, ask=T)
+
+
+#Prediction
+
+# make some variables factor
+pred.gam <- predict(gamscope,newdata=data.test)     
+dev.gam <- sum((pred.gam-data.test$Capita.solar.spain)^2)
+dev.gam
 
 
 
