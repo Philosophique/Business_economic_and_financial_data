@@ -51,9 +51,9 @@ library(sm)
 library(splines)
 library(gam)
 library(tree)
-library (gbm)
-library (randomForest)
-library (forecast)
+library(gbm)
+library(randomForest)
+library(forecast)
 
 
 ```
@@ -240,8 +240,8 @@ Plot the data and the autocorrelation plot.
 
 ```{r results = 'asis'}
 
-plot(x = df$Year[25:57], cap_solar_SP,  xlab="Year", ylab="Solar per capita kWh", type= "b",  pch=16, lty=3, cex=0.6) #from 1989 to 2021
-plot(cumsum(cap_solar_SP), x = df$Year[25:57], type="b", xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
+plot(x = df$Year[25:57], cap_solar_SP,  xlab="Year", ylab="Per capita consumption (kWh)", type= "b",  pch=16, lty=3, cex=0.6) #from 1989 to 2021
+plot(cumsum(cap_solar_SP), x = df$Year[25:57], type="b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 acf(cap_solar_SP)
 
 ```
@@ -255,15 +255,15 @@ m_lm <- lm(cap_solar_SP ~ df$Year[25:57])
 summary(m_lm)
 
 ##plot of the model
-plot(df$Year[25:57], cap_solar_SP, xlab="Time", ylab="Solar per capita kWh", type= "b",  pch=16, lty=3, cex=0.6)
-abline(m_lm, col=3)
+plot(df$Year[25:57], cap_solar_SP, xlab="Year", ylab="Per capita consumption (kWh)", type= "b", pch=16, lty=3, cex=0.6)
+abline(m_lm, lwd=2, col=3)
 
 ##Test of DW
 dwtest(m_lm)
 
 ##check the residuals
 res_lm<- residuals(m_lm)
-plot(df$Year[25:57], res_lm, xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
+plot(df$Year[25:57], res_lm, xlab="Year", ylab="Residuals (kWh)", type= "b",  pch=16, lty=3, cex=0.6)
 
 
 ```
@@ -284,16 +284,18 @@ summary(m_tslm)
 
 # Calculate fitted values and plot them
 fit <- fitted(m_tslm)
-plot(cap_solar_SP.ts)
-lines(fitted(m_tslm), col = 2)
+plot(cap_solar_SP.ts, xlab="Year", ylab="Per capita consumption (kWh)", type= "b", pch=16, lty=3, cex=0.6)
+lines(fitted(m_tslm), lwd = 2, col = 2)
 
 # Do a forecast and plot it
 fore <- forecast(m_tslm)
-plot(fore)
+plot(fore, xlab="Year", ylab="Per capita consumption (kWh)", xaxt ='n',type= "b", pch=16, lty=3, cex=0.6)
+axis(1, at = seq(1, 42, by=5), labels=seq(1989, 2030, by=5))
+
 
 # Calculate residuals and plot them
 res <- residuals(m_tslm)
-plot(df$Year[25:57], res_lm, xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
+plot(df$Year[25:57], res_lm, xlab="Time", ylab="Residuals (kWh)", type= "b",  pch=16, lty=3, cex=0.6)
 
 # Lets us calculate the autocorrelation function of the residuals
 Acf(res)
@@ -318,7 +320,7 @@ pred_bm_SP<- predict(bm_SP, newx=c(1:50))
 pred.inst_SP<- make.instantaneous(pred_bm_SP)
 
 ###plot of fitted model 
-plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
+plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), pred.inst_SP[1:34], lwd=2, col=2)
 
 ```
@@ -336,7 +338,7 @@ pred_bm_SP75<- predict(bm_SP75, newx=c(1:50))
 pred.inst_SP75<- make.instantaneous(pred_bm_SP75)
 
 # plotting
-plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
+plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), pred.inst_SP75[1:34], lwd=2, col=2)
 
 ```
@@ -348,16 +350,20 @@ Plot both models to compare them.
 
 ###Comparison between models (instantaneous)
 ###instantaneous
-plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
+plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), pred.inst_SP75[1:34], lwd=2, col=2)
 lines(x = c(1989:2022), pred.inst_SP[1:34], lwd=2, col=4)
+legend("topleft", legend=c("Data", "BM", "BM 75%"),
+       col=c(1,2,4),  lty = 1, cex=1.2, lwd = 3)
 
 
 
 ###Comparison between models (cumulative)
-plot(x = df$Year[25:57], cumsum(cap_solar_SP), type= "b",xlab="Year", ylab="Annual sales",  pch=16, lty=3, cex=0.6)
+plot(x = df$Year[25:57], cumsum(cap_solar_SP), type= "b",xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), pred_bm_SP75[1:34], lwd=2, col=2)
 lines(x = c(1989:2022), pred_bm_SP[1:34], lwd=2, col=4)
+legend("topleft", legend=c("Data", "BM", "BM 75%"),
+       col=c(1,2,4),  lty = 1, cex=1.2, lwd = 3)
 
 ```
 
@@ -372,8 +378,14 @@ summary(GBM_SP_e2)
 pred_GBM_SP_e2<- predict(GBM_SP_e2, newx=c(1:50))
 pred_GBM_SP_e2.inst<- make.instantaneous(pred_GBM_SP_e2)
 
-plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1989,2025), ylim=c(0,2200))
+plot(x = df$Year[25:57], cap_solar_SP, type= "b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6, xlim=c(1989,2025), ylim=c(0,2200))
 lines(x = c(1989:2023), pred_GBM_SP_e2.inst[1:35], lwd=2, col=2)
+
+
+fit_GBM_SP<- fitted(GBM_SP_e2)
+fit_GBM_SP_inst<- make.instantaneous(fit_GBM_SP)
+plot(x = df$Year[25:57], cap_solar_SP, xlab="Year", ylab="Per capita consumption (kWh)",type= "b",pch=16, lty=3, cex=0.6)
+lines(x = c(1989:2021), fit_GBM_SP_inst, lwd=2, col=2)
 
 ```
 
@@ -382,12 +394,7 @@ lines(x = c(1989:2023), pred_GBM_SP_e2.inst[1:35], lwd=2, col=2)
 ###Analysis of residuals
 res_GBM_SP<- residuals(GBM_SP_e2)
 acf<- acf(res_GBM_SP)
-
-
-fit_GBM_SP<- fitted(GBM_SP_e2)
-fit_GBM_SP_inst<- make.instantaneous(fit_GBM_SP)
-plot(fit_GBM_SP_inst)
-
+  
 ```
 
 # GGM
@@ -400,8 +407,14 @@ summary(GGM_SP)
 pred_GGM_SP<- predict(GGM_SP, newx=c(1:60))
 pred_GGM_SP.inst<- make.instantaneous(pred_GGM_SP)
 
-plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=3, cex=0.6, xlim=c(1989,2030), ylim=c(0,2700))
+plot(x = df$Year[25:57], cap_solar_SP, type= "b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6, xlim=c(1989,2030), ylim=c(0,2700))
 lines(x = c(1989:2030), pred_GGM_SP.inst[1:42], lwd=2, col=2)
+
+
+fit_GGM_SP<- fitted(GGM_SP)
+fit_GGM_SP_inst<- make.instantaneous(fit_GGM_SP)
+plot(x = df$Year[25:57], cap_solar_SP, xlab="Year", ylab="Per capita consumption (kWh)", type= "b",pch=16, lty=3, cex=0.6)
+lines(x = c(1989:2021), fit_GGM_SP_inst, lwd=2, col=2)
 ```
 
 
@@ -411,11 +424,6 @@ lines(x = c(1989:2030), pred_GGM_SP.inst[1:42], lwd=2, col=2)
 res_GGM_SP<- residuals(GGM_SP)
 acf<- acf(residuals(GGM_SP))
 
-
-fit_GGM_SP<- fitted(GGM_SP)
-fit_GGM_SP_inst<- make.instantaneous(fit_GGM_SP)
-plot(fit_GGM_SP_inst)
-
 ```
 
 
@@ -423,12 +431,13 @@ plot(fit_GGM_SP_inst)
 
 ### Comparison between BM, GBM and GGM
 
-plot(x = df$Year[25:57], cap_solar_SP, type= "o",xlab="Year", ylab="Consumption (kWh)", main = "Per capita solar energy consumption - model comparison",  pch=16, lty=1, cex=0.6, xlim=c(1989,2023), ylim=c(0,2700))
+plot(x = df$Year[25:57], cap_solar_SP, type= "o", xlab="Year", ylab="Per capita consumption (kWh)", pch=16, lty=1, cex=0.6, xlim=c(1989,2023), ylim=c(0,2700))
 lines(x = c(1989:2023), pred_GGM_SP.inst[1:35], lwd=2, col=7)
 lines(x = c(1989:2023), pred_GBM_SP_e2.inst[1:35], lwd=2, col=4)
 lines(x = c(1989:2023), pred.inst_SP[1:35], lwd=2, col=2)
 legend("topleft", legend=c("Data", "BM", "GBM with two exp shocks", "GGM"),
-       col=c(1,2,4,7),  lty = 1, cex=1.5, lwd = 3)
+       col=c(1,2,4,7),  lty = 1, cex=1.2, lwd = 3)
+#main = "Per capita solar energy consumption - model comparison",
 
 ```
 
@@ -442,7 +451,7 @@ legend("topleft", legend=c("Data", "BM", "GBM with two exp shocks", "GGM"),
 
 cap_solar_SP <- df$Capita.solar.spain[25:57] # erase this later, it's repeated
 
-plot(x = df$Year[25:57],cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
+plot(x = df$Year[25:57],cap_solar_SP, type= "b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 Acf(cap_solar_SP)
 Pacf(cap_solar_SP)
 
@@ -467,12 +476,12 @@ resid1<- residuals(arima1)
 tsdisplay(resid1)
 
 # Plot Arima model
-plot(x = df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
-lines(x = c(1989:2022), fitted(arima1)[1:34], col=2)
+plot(x = df$Year[25:57], cap_solar_SP, xlab="Year", ylab="Per capita consumption (kWh)", type= "b", pch=16, lty=3, cex=0.6)
+lines(x = c(1989:2022), fitted(arima1)[1:34], lwd =2, col=2)
 
 # Forecast
 for1<- forecast(arima1, 5)
-plot(for1, xaxt = 'n')
+plot(for1, xaxt = 'n', xlab="Year", ylab="Per capita consumption (kWh)", type= "b", pch=16, lty=3, cex=0.6)
 axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 ```
@@ -506,11 +515,11 @@ auto_with_reg <- auto.arima(cap_solar_SP, xreg = fit_GBM_SP)
 auto_with_reg
 summary(auto_with_reg)
 
-plot(df$Year[25:57],cap_solar_SP, type= "o",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=1, cex=0.6, col = 1)
-lines(df$Year[25:57], fit_GBM_SP_inst, lwd=1, lty=1, col = 2)
-lines(df$Year[25:57], fitted(auto_with_reg), lty=1,lwd=1, col=7)
+plot(df$Year[25:57],cap_solar_SP, type= "o", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=1, cex=0.6, col = 1)
+lines(df$Year[25:57], fit_GBM_SP_inst, lwd=2, lty=1, col = 2)
+lines(df$Year[25:57], fitted(auto_with_reg), lty=1, lwd=2, col=7)
 legend("topleft", legend=c("Data", "GBM", "Auto ARIMA with xreg"),
-       col=c(1,2,7),  lty = 1, cex=1.5, lwd = 3)
+       col=c(1,2,7),  lty = 1, cex=1.2, lwd = 3)
 
 
 
@@ -540,7 +549,7 @@ Acf(res_all_countries)
 fitted_all_countries <- fitted(armax_all_countries)
 
 plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
-lines(df$Year[25:57],fitted_all_countries, col = 2)
+lines(df$Year[25:57],fitted_all_countries,  lwd=2,col = 2)
 
 # Do forecast
 forecast(armax_all_countries, 4, xreg = xreg)
