@@ -52,7 +52,8 @@ library(splines)
 library(gam)
 library(tree)
 library (gbm)
-library ( randomForest)
+library (randomForest)
+library (forecast)
 
 
 ```
@@ -161,17 +162,22 @@ rownames(df) <- df$Year
 # EDA
 
 ```{r results = 'asis'}
+str(df)
+summary(df)
+```
+
+```{r results = 'asis'}
 
 df2 <- df[25:57,]
 
 png(file="consumption_countries.png", width=14,height=12,units="cm", res=1200, pointsize=6)
-plot(df2$Year, df2$Capita.solar.india, type = "b", col = 6, ylim = c(1,2000), xlab="Year", ylab="Consumption (kWh)", main="Per capita solar energy consumption", cex.lab = 1.5, cex.main = 1.8)
-lines(df2$Year, df2$Capita.solar.china, type = "b", col = 3)
-lines(df2$Year, df2$Capita.solar.germany, type = "b", col = 1)
-lines(df2$Year, df2$Capita.solar.world, type = "b", col = 7)
-lines(df2$Year, df2$Capita.solar.australia, type = "b", col = 5)
-lines(df2$Year, df2$Capita.solar.spain, type = "b", col = 2)
-lines(df2$Year, df2$Capita.solar.usa, type = "b", col = 4)
+plot(df2$Year, df2$Capita.solar.india, type = "o", col = 6, ylim = c(1,2000), xlab="Year", ylab="Consumption (kWh)", main="Per capita solar energy consumption", cex.lab = 1.5, cex.main = 1.8, pch = 16)
+lines(df2$Year, df2$Capita.solar.china, type = "b", col = 3, pch = 16)
+lines(df2$Year, df2$Capita.solar.germany, type = "b", col = 1, pch = 16)
+lines(df2$Year, df2$Capita.solar.world, type = "b", col = 7, pch = 16)
+lines(df2$Year, df2$Capita.solar.australia, type = "b", col = 5, pch = 16)
+lines(df2$Year, df2$Capita.solar.spain, type = "b", col = 2, pch = 16)
+lines(df2$Year, df2$Capita.solar.usa, type = "b", col = 4, pch = 16)
 legend(1990, 2000, legend=c("Spain", "China", "Germany", "USA", "Australia",
                        "India", "World"),
        col=c(2,3,1,4,5,6,7),  lty = 1, cex=1.5, lwd = 3)
@@ -179,13 +185,13 @@ dev.off()
 
 
 png(file="generation.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(df2$Year, df2$Generation.world, type = "b", col = 7, ylim = c(1,350), xlab="Year", ylab="Generation (TWh)", main= "Solar power generation", cex.lab = 1.5, cex.main = 1.8)
-lines(df2$Year, df2$Generation.china, type = "b", col = 3)
-lines(df2$Year, df2$Generation.germany, type = "b", col = 1)
-lines(df2$Year, df2$Generation.spain, type = "b", col = 2)
-lines(df2$Year, df2$Generation.australia, type = "b", col = 5)
-lines(df2$Year, df2$Generation.india, type = "b", col = 6)
-lines(df2$Year, df2$Generation.usa, type = "b", col = 4)
+plot(df2$Year, df2$Generation.world, type = "o", col = 7, ylim = c(1,350), xlab="Year", ylab="Generation (TWh)", main= "Solar power generation", cex.lab = 1.5, cex.main = 1.8, pch = 16)
+lines(df2$Year, df2$Generation.china, type = "b", col = 3, pch = 16)
+lines(df2$Year, df2$Generation.germany, type = "b", col = 1, pch = 16)
+lines(df2$Year, df2$Generation.spain, type = "b", col = 2, pch = 16)
+lines(df2$Year, df2$Generation.australia, type = "b", col = 5, pch = 16)
+lines(df2$Year, df2$Generation.india, type = "b", col = 6, pch = 16)
+lines(df2$Year, df2$Generation.usa, type = "b", col = 4, pch = 16)
 legend(1990, 350, legend=c("Spain", "China", "Germany", "USA", "Australia",
                        "India", "World"),
        col=c(2,3,1,4,5,6,7), lty = 1, cex=1.5, lwd = 3)
@@ -193,29 +199,28 @@ dev.off()
 
 
 png(file="consumption_energies.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(df2$Year, df2$Capita.solar.spain, type = "o", col = 7, ylim = c(1,25000), xlab="Year",ylab = "Consumption (kWh)", main ="Per capita solar energy consumption", cex.lab = 1.5, cex.main = 1.8)
-lines(df2$Year, df2$Capita.oil, type = "o", col = 2)
-lines(df2$Year, df2$Capita.nuclear, type = "o", col = 3)
-lines(df2$Year, df2$Capita.gas, type = "o", col = 6)
-lines(df2$Year, df2$Capita.wind, type = "o", col = 4)
-lines(df2$Year, df2$Capita.coal, type = "o", col = 1)
-legend("topright", legend=c("Solar", "Wind", "Nuclear", "Coal", "Gas",
-                       "Oil"),
+plot(df2$Year, df2$Capita.solar.spain, type = "o", col = 7, ylim = c(1,25000), xlab="Year",ylab = "Consumption (kWh)", main ="Per capita solar energy consumption", cex.lab = 1.5, cex.main = 1.8, pch = 16)
+lines(df2$Year, df2$Capita.oil, type = "o", col = 2, pch = 16)
+lines(df2$Year, df2$Capita.nuclear, type = "o", col = 3, pch = 16)
+lines(df2$Year, df2$Capita.gas, type = "o", col = 6, pch = 16)
+lines(df2$Year, df2$Capita.wind, type = "o", col = 4, pch = 16)
+lines(df2$Year, df2$Capita.coal, type = "o", col = 1, pch = 16)
+legend("topright", legend=c("Solar", "Wind", "Nuclear", "Coal", "Gas","Oil"),
        col=c(7,4,3,1,6,2),  lty = 1, cex=1, lwd = 3)
 dev.off()
 
 
 
 png(file="prices.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(df2$Year, df2$PV.price, type = "o", col = 7, xlab="Year", ylab = "Price (($/W))", main="Solar PV module prices", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8)
+plot(df2$Year, df2$PV.price, type = "o", col = 7, xlab="Year", ylab = "Price (($/W))", main="Solar PV module prices", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8, pch = 16)
 dev.off()
 
 png(file="capacity.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(df2$Year, df2$PV.capacity, type = "o", col = 7, xlab="Year", ylab = "Capacity (GW)", main ="Solar PV capacity", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8)
+plot(df2$Year, df2$PV.capacity, type = "o", col = 7, xlab="Year", ylab = "Capacity (GW)", main ="Solar PV capacity", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8, pch = 16)
 dev.off()
 
 png(file="share.png", width=14,height=12,units="cm", res=1200, pointsize=6)
-plot(df2$Year, df2$PV.capacity, type = "o", col = 7, xlab="Year", ylab = "Share (%)", main ="Share of electricity production from solar", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8)
+plot(df2$Year, df2$PV.capacity, type = "o", col = 7, xlab="Year", ylab = "Share (%)", main ="Share of electricity production from solar", lwd = 1.5, cex.lab = 1.5, cex.main = 1.8, pch = 16)
 dev.off()
 
 ```
@@ -223,21 +228,11 @@ dev.off()
 
 # Apply stuff from the lectures
 
-Check some info of the data
-
-```{r results = 'asis'}
-
-str(df) #str() is an alternative to summary() but more compact
-
-```
-
-
 Take the column we want to study in depth (per capita solar energy consumption in Spain)
 
 ```{r results = 'asis'}
 
 cap_solar_SP <- df$Capita.solar.spain[25:57] #25 because first data start there
-tt<- df$Year[25:57] #1:NROW(cap_solar_SP)
 
 ```
 
@@ -246,57 +241,67 @@ Plot the data and the autocorrelation plot.
 ```{r results = 'asis'}
 
 plot(x = df$Year[25:57], cap_solar_SP,  xlab="Year", ylab="Solar per capita kWh", type= "b",  pch=16, lty=3, cex=0.6) #from 1989 to 2021
-acf(cap_solar_SP) #strong correlation with lag values, correlation is negative after 10 years.
-
+plot(cumsum(cap_solar_SP), x = df$Year[25:57], type="b", xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
+acf(cap_solar_SP)
 
 ```
 
-
+LM
 
 ```{r Cap_solar_SP linear regression, results=}
 
-##fit a linear regression model           (not sure if useful method)
-fit1 <- lm(cap_solar_SP ~ tt)
-summary(fit1)
+##fit a linear regression model (Just to check is not good)
+m_lm <- lm(cap_solar_SP ~ df$Year[25:57])
+summary(m_lm)
 
 ##plot of the model
-plot(tt, cap_solar_SP, xlab="Time", ylab="Solar per capita kWh", type= "b",  pch=16, lty=3, cex=0.6)
-abline(fit1, col=3)
+plot(df$Year[25:57], cap_solar_SP, xlab="Time", ylab="Solar per capita kWh", type= "b",  pch=16, lty=3, cex=0.6)
+abline(m_lm, col=3)
 
-##check the residuals? are they autocorrelated? Test of DW
-dwtest(fit1)
+##check the residuals? are they auto correlated? Test of DW
+dwtest(m_lm)
 
 ##check the residuals
-resfit1<- residuals(fit1)
-plot(tt, resfit1,xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
+res_lm<- residuals(m_lm)
+plot(df$Year[25:57], res_ml,xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
 
 
 ```
 
+TsLM
 
 
-```{r results = 'asis'}
+```{r , results=}
 
-##let us do the same with a linear model for time series, so we transform the data into a ts object
+# Works pretty bad because it only models the trend
+
+# convert to time series
 cap_solar_SP.ts <- ts(cap_solar_SP)
 
-## we fit a linear model with the tslm function
-fitts<- tslm(cap_solar_SP.ts~trend)
+# Model
+m_tslm <- tslm(cap_solar_SP.ts~trend)
+summary(m_tslm)
 
-###obviously it gives the same results of the first model
-summary(fitts)
+# Calculate fitted values and plot them
+fit <- fitted(m_tslm)
+plot(cap_solar_SP.ts)
+lines(fitted(m_tslm), col = 2)
 
-dwtest(fitts)
+# Do a forecast and plot it
+fore <- forecast(m_tslm)
+plot(fore)
 
-```
+# Calculate residuals and plot them
+res <- residuals(m_tslm)
+plot(res)
 
+# Lets us calculate the autocorrelation function of the residuals
+Acf(res)
 
-
-```{r results = 'asis'}
-
-plot(cap_solar_SP, x = df$Year[25:57], type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
-plot(cumsum(cap_solar_SP), x = df$Year[25:57], type="b", xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
-
+# DW test
+dw <- dwtest(m_tslm)
+dw
+#########
 ```
 
 # Bass Model
@@ -315,29 +320,6 @@ pred.inst_SP<- make.instantaneous(pred_bm_SP)
 ###plot of fitted model 
 plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), pred.inst_SP[1:34], lwd=2, col=2)
-
-```
-
-Predict (out-of-sample)
-
-```{r results = 'asis'}
-
-############################################################################
-###### this and the next cell are exactly the same as the cell above #######
-############################################################################
-
-pred_bm_SP_oos<- predict(bm_SP, newx=c(1:50))
-pred.inst_SP_oos<- make.instantaneous(pred_bm_SP_oos)
-
-```
-
-Plot of fitted model with out of sample predictions
-
-```{r results = 'asis'}
-
-### 
-plot(cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
-lines(pred.inst_SP_oos, lwd=2, col=2)
 
 ```
 
@@ -395,11 +377,23 @@ lines(x = c(1989:2023), pred_GBM_SP_e2.inst[1:35], lwd=2, col=2)
 
 ```
 
+```{r results = 'asis'}
+
+###Analysis of residuals
+res_GBM_SP<- residuals(GBM_SP_e2)
+acf<- acf(res_GBM_SP)
+
+
+fit_GBM_SP<- fitted(GBM_SP_e2)
+fit_GBM_SP_inst<- make.instantaneous(fit_GBM_SP)
+plot(fit_GBM_SP_inst)
+
+```
+
 # GGM
 
 ```{r cap_solar_SP GGM, results=}
 
-######GGM 
 GGM_SP<- GGM(cap_solar_SP, prelimestimates=c(1.243162e+04, 0.01, 0.01,  2.424655e-05, 3.283666e-01))
 summary(GGM_SP)
 
@@ -420,8 +414,24 @@ acf<- acf(residuals(GGM_SP))
 
 fit_GGM_SP<- fitted(GGM_SP)
 fit_GGM_SP_inst<- make.instantaneous(fit_GGM_SP)
+plot(fit_GGM_SP_inst)
 
 ```
+
+
+```{r results = 'asis'}
+
+### Comparison between BM, GBM and GGM
+
+plot(x = df$Year[25:57], cap_solar_SP, type= "o",xlab="Year", ylab="Consumption (kWh)", main = "Per capita solar energy consumption - model comparison",  pch=16, lty=1, cex=0.6, xlim=c(1989,2023), ylim=c(0,2700))
+lines(x = c(1989:2023), pred_GGM_SP.inst[1:35], lwd=2, col=7)
+lines(x = c(1989:2023), pred_GBM_SP_e2.inst[1:35], lwd=2, col=4)
+lines(x = c(1989:2023), pred.inst_SP[1:35], lwd=2, col=2)
+legend("topleft", legend=c("Data", "BM", "GBM with two exp shocks", "GGM"),
+       col=c(1,2,4,7),  lty = 1, cex=1.5, lwd = 3)
+
+```
+
 
 
 # Arima
@@ -430,7 +440,7 @@ fit_GGM_SP_inst<- make.instantaneous(fit_GGM_SP)
 
 # Let's begin with Arima
 
-# autoplot(cap_solar_SP)
+cap_solar_SP <- df$Capita.solar.spain[25:57] # erase this later, it's repeated
 
 plot(x = df$Year[25:57],cap_solar_SP, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
 Acf(cap_solar_SP)
@@ -438,6 +448,7 @@ Pacf(cap_solar_SP)
 
 ```
 
+Own Arima, delete? First solve problem with autoarima (0,2,0)
 
 ```{r results = 'asis'}
 # Fit Arima model
@@ -460,11 +471,14 @@ plot(x = df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), fitted(arima1)[1:34], col=2)
 
 # Forecast
-for1<- forecast(arima1)
-plot(for1)
+for1<- forecast(arima1, 5)
+plot(for1, xaxt = 'n')
+axis(1, at=1:38, labels=c(1989:2026))
 
 ```
 
+
+Auto arima
 
 ```{r cap_solar_SP Autoarima, results=}
 
@@ -477,92 +491,100 @@ plot(x = df$Year[25:57], cap_solar_SP,type= "b", pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), fitted(auto.a)[1:34], col=2)
 
 # Do forecast
-autoplot(forecast(auto.a))
+plot(forecast(auto.a, 5), xaxt='n')
+axis(1, at=1:38, labels=c(1989:2026))
+
 
 #Check residuals
 checkresiduals(auto.a)
 
 
 
+####SARMAX refinement
+####SARMAX model with external covariate 'fit_GBM_SP' 
+auto_with_reg <- auto.arima(cap_solar_SP, xreg = fit_GBM_SP)
+auto_with_reg
+summary(auto_with_reg)
 
-```
+plot(df$Year[25:57],cap_solar_SP, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=1, cex=0.6, col = 1)
+lines(df$Year[25:57], fit_GBM_SP_inst, lwd=1, lty=1, col = 2)
+lines(df$Year[25:57], fitted(auto_with_reg), lty=1,lwd=1, col=7)
+legend("topleft", legend=c("Data", "GGM fit", "Auto ARIMA with xreg"),
+       col=c(1,2,7),  lty = 1, cex=1.5, lwd = 3)
 
-
-
-```{r PV modules influence on cap_solar_SP, results=}
-# Let's see the influence of the price of PV modules
-
-price <- df$PV.price[25:57]
-plot(x = df$Year[25:57],price,type= "b", pch=16, lty=3, cex=0.6)
-acf(price)
-pacf(price)
-
-
-# armax1 <- Arima(cap_solar_SP, xreg = price, order = c(1,1,1))
-armax1 <- auto.arima(cap_solar_SP, xreg = price)
-summary(armax1)
-res1 <- residuals(armax1)
-Acf(res1)
-
-fitted(armax1)
-plot(x = df$Year[25:57], cap_solar_SP,type= "b", pch=16, lty=3, cex=0.6)
-lines(x = c(1989:2022),fitted(armax1)[1:34], col = 2)
 
 
 ```
 
 
+# Influence of external regressors
 
-```{r PV modul capacity influence on cap_solar_SP, results=}
+## All countries
 
-# Let's see the influence of the capacity of PV modules
+```{r china influence on cap_solar_SP, results=}
 
-capacity <- df$PV.capacity[25:57]
-capacity.ts <- ts(capacity)
-# ts.plot(capacity.ts, type="o")
+# Let's see the influence of the solar energy consumption in China over the one in Spain
 
-plot(x = df$Year[25:57],capacity,type= "b", pch=16, lty=3, cex=0.6)
-acf(capacity)
-pacf(capacity)
 
-armax1 <- auto.arima(cap_solar_SP, xreg = capacity)
-summary(armax1)
-res1 <- residuals(armax1)
-Acf(res1)
+xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
+              China=df$Capita.solar.china[25:57],
+              USA=df$Capita.solar.usa[25:57],
+              India=df$Capita.solar.india[25:57],
+              Australia=df$Capita.solar.australia[25:57])
 
-fitted(armax1)
-plot(x = df$Year[25:57],cap_solar_SP,type= "b", pch=16, lty=3, cex=0.6)
-lines(x = c(1989:2022),fitted(armax1)[1:34], col = 2)
+armax_all_countries <- auto.arima(cap_solar_SP, xreg = xreg)
+summary(armax_all_countries)
+# Residuals
+res_all_countries <- residuals(armax_all_countries)
+Acf(res_all_countries)
 
+fitted_all_countries <- fitted(armax_all_countries)
+
+plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
+lines(df$Year[25:57],fitted_all_countries, col = 2)
+
+# Do forecast
+forecast(armax_all_countries, 5, xreg = xreg)
+plot(forecast(armax_all_countries, 5, xreg = matrix(xreg, ncol=20)), xaxt='n')
+axis(1, at=1:38, labels=c(1989:2026))
+
+```
+
+## Countries + price + capacity + share
+
+```{r china influence on cap_solar_SP, results=}
+
+# Let's see the influence of the solar energy consumption in China over the one in Spain
+
+
+xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
+              China=df$Capita.solar.china[25:57],
+              USA=df$Capita.solar.usa[25:57],
+              India=df$Capita.solar.india[25:57],
+              Price = df$PV.price[25:57],
+              Capacity = df$PV.capacity[25:57],
+              Share = df$Share.from.solar[25:57])
+
+armax_all <- auto.arima(cap_solar_SP, xreg = xreg)
+summary(armax_all)
+# Residuals
+res_all <- residuals(armax_all)
+Acf(res_all)
+
+fitted_all <- fitted(armax_all)
+
+plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
+lines(df$Year[25:57],fitted_all, col = 2)
+
+# # Do forecast
+forecast(armax_all, 5, xreg = xreg)
+plot(forecast(armax_all, 5, xreg = xreg), xaxt='n')
+# axis(1, at=1:38, labels=c(1989:2026))
 
 ```
 
 
-
-```{r results = 'asis'}
-
-mod <- tslm(cap_solar_SP.ts~trend+capacity.ts)
-summary(mod)
-
-fitted(mod)
-plot(x = df$Year[25:57], cap_solar_SP.ts, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
-lines(x = c(1989:2022), fitted(mod)[1:34], col = 2)
-
-# Analysis of residuals - autocorelation?
-plot(x = df$Year[25:57],residuals(mod),type= "b",xlab="Year", ylab="Residuals",  pch=16, cex=0.6)
-dw <- dwtest(mod, alt="two.sided")
-tsdisplay(residuals(mod))
-
-aar <- auto.arima(residuals(mod))
-fitted(aar)
-
-plot(x = df$Year[25:57],cap_solar_SP.ts, type= "b",xlab="Year", ylab="Solar per capita kWh",  pch=16, lty=3, cex=0.6)
-lines(x = c(1989:2022), fitted(mod)[1:34]+fitted(aar)[1:34], col = 3)
-
-```
-
-
-
+# Check this
 
 ```{r Installed solar capacity of spain vs world, results=}
 #Inspecting if the installed solar energy capacity of Spain is influenced by the one of another country.
@@ -599,180 +621,185 @@ ccf_spain_australia <- ccf(df_capacity_transformed$Australia, df_capacity_transf
 
 
 
-#plotting Cross correlation function of every countries againts spain to see if we can see if some countries spedind leads to spain spending. I am not able to plot with the columns.
+#plotting Cross correlation function of every countries againts spain to see if we can see if some countries speding leads to Spain spending. I am not able to plot with the columns.
 ccf_spain_vs_all <- sapply(df_capacity_transformed, function(col_names) ccf(col_names,df_capacity_transformed$Spain,26))
 #from all correlogram, no lagged values of countries seems to influence spain spending.
 
 ```
 
 
-
+# Model Price-Capacity relation
 
 
 ```{r Relationship capacity vs PV modul price, results=}
-#Analyszing relationship between Installed solar energy capacity and solar PV modul price
 
-df_price_capacity <- df[32:57,] %>% select(Year, PV.capacity, PV.price) #[32:57] to avoid 0 values of df_price
-
-#Creat variable time and variable to not affect df_price_cap
-t <- 1:NROW(df_price_capacity)
-df_p_c <- df_price_capacity
-
-#make plot
-plot(x = df$Year[32:57], df_p_c$PV.capacity, xlab = "Time", ylab = "Solar Capacity")
-plot(x = df$Year[32:57], df_p_c$PV.price, xlab = "Time", ylab = "Solar PV Price")
-
-ggplot(df_p_c, aes(t)) +                    
-  geom_line(aes(y=df_p_c$PV.capacity, colour="Capacity")) +
-  geom_line(aes(y=df_p_c$PV.price, colour="Price"))+
-  scale_colour_manual("", 
-                      breaks = c("Capacity", "Price"),
-                      values = c("Capacity"="green", "Price"="red")) +
-  xlab(" ") +
-  scale_y_continuous("Amount", limits = c(0,10)) + 
-  labs(title="Years")
+y <-  df$PV.price[32:57]
+x <-  df$PV.capacity[32:57] #[32:57] to avoid 0 values of df_capacity
 
 #ACF
-acf(df_p_c,15)
-ccf(df_p_c$PV.capacity, df_p_c$PV.price,15)
+acf(x, 15)
+acf(y, 15)
+ccf(x, y,15)
 
 #Fit linear regression model
-fit1 <- lm(df_p_c$PV.price~ df_p_c$PV.capacity, df_p_c)
+fit1 <- lm(y ~ x)
 summary(fit1)
 #summary analysis: Residual: average price of 4.34 for Solar PV modul. For an increase of 1 gigawatts, the price of PV modul drop of 0.50241usd$ per watts with a variation of 0.06389usd$ per watts. T-value significantly bigger than zero and their standard-errors, indicating that the coefficients are relatively bigger enough from their standor-errors. P-value smaller than 5% and three start, thus p-value significant enough to reject null hypothesis which mean there is a relationship between solar capacity and solar PV modul price. The residual standard error is 1.115, which represent 1.115/4.34312= 25.6% deviation error. R-squared of 0.7204, which mean that 72% of the variance of the solar PV modul price can be described by the solar capacity. F-Statistic larger than 1 significantly for 24 DF, meaning strong indication we can reject null hypothesis of no relationship.
 
 ##Plot of the model
-plot(df_p_c$PV.capacity, df_p_c$PV.price, xlab="Solar Capacity", ylab="Solar PV Price")
-abline(fit1, col=3) #The abline() function can be used to add vertical,
-                     #horizontal or regression lines to plot.
+plot(x, y, xlab="Capacity (GW)", ylab="Price ($/W)")
+abline(fit1, col=3) 
 
-##Check the residuals? are they autocorrelated? Test of DW
-dwtest(fit1) #reject null hypothesis, thus they are autocorrelated.
+##Check the residuals? are they auto correlated? Test of DW
+dwtest(fit1) #reject null hypothesis, thus they are auto correlated.
 
 ##check the residuals
 resfit<- residuals(fit1) 
 plot(resfit,xlab="Solar Capacity", ylab="residuals" )
 
-###Local regression
-y <-  df_p_c$PV.price
-x <-  df_p_c$PV.capacity
-plot(x,y, xlab="Solar capacity", ylab="Solar PV modul price")
 
-sm.regression(x, y, h= 10, add= T)
+###################
+###Local regression
+###################
+y <-  df$PV.price[32:57]
+x <-  df$PV.capacity[32:57]
+plot(x,y,xlab="Capacity (GW)", ylab="Price ($/W)")
+
+sm.regression(x, y, h= 5, add= T)
 
 #lets increase the number of points where the function is calculated
-sm.regression(x, y, h= 10, add= T, ngrid=200,col=2)
+sm.regression(x, y, h= 5, add= T, ngrid=200,col=1)
 
 #Trying different value for h: higher h = smoother function.
-sm.regression(x, y,   h = 30, ngrid=200, col=1)
-sm.regression(x, y,   h = 50, add = T, ngrid=200, col=2)
-sm.regression(x, y,   h = 5,  add = T, ngrid=200, col=3)
-sm.regression(x, y,   h = 1,  add = T, col=3, ngrid=200)
+sm.regression(x, y,   h = 4, ngrid=200, col=2)
+sm.regression(x, y,   h = 3, add = T, ngrid=200, col=3) # Choose this one
+sm.regression(x, y,   h = 2,  add = T, ngrid=200, col=4)
+sm.regression(x, y,   h = 1,  add = T, col=5, ngrid=200)
 
 #We add variability bands
-sm.regression(x, y,   h = 30, ngrid=200, display="se")
+sm.regression(x, y,   h = 3, ngrid=200, display="se")
 
+#####################
 ###Loess (Locally Weighted Least Squares Regression). it uses more local data to estimate our Y variable. But it is also known as a variable bandwidth smoother, in that it uses a 'nearest neighbors' method to smooth.
+#####################
 
+plot(x,y, xlab="Capacity (GW)", ylab="Price ($/W)")
 lo1 <- loess.smooth(x,y) 
 lines(lo1) #default span = 0.75
 lo2 <- loess.smooth(x,y,span=0.9)
 lines(lo2,col=2)
-lo3 <- loess.smooth(x,y,span=0.4)
+lo3 <- loess.smooth(x,y,span=0.4) 
 lines(lo3,col=3)
 
 #another way to perform loess, performs directly the plot
 #default span= 2/3
 scatter.smooth(x,y) 
 scatter.smooth(x,y, span=0.3)
-scatter.smooth(x,y, span=0.3, evaluation=200)
+scatter.smooth(x,y, span=0.3, evaluation=200)  ########### I wouldn't take any loess result because it gives negative values for the price
 
+#####################
 ###Regression splines (cubic splines)
-plot(x,y,xlab="Solar capacity", ylab="Solar PV modul price")
+#####################
 
 #We select and identify the knots 'equispaced'
 xi<-seq(min(x), max(x), length=4)
 
-#2 internal knots
+# Model (2 internal knots)
 m1cc<-lm(y ~ bs(x, knots=xi[2:(length(xi)-1)], degree=3))
 
-#Select 200 points
+###---- for graphical reasons select 200 points where to evaluate the model
 xxx<-seq(min(x),max(x),length=200)
 
 #Make predictions by using the 'xxx' points
 fit1<-predict(m1cc, data.frame(x=xxx))
-plot(x,y,xlab="Solar capacity", ylab="Solar PV modul price")
+plot(x,y,xlab="Capacity (GW)", ylab="Price ($/W)")
 lines(xxx,fit1,col=2)
 
-######vertical lin3 to indicate the knots
+######vertical line to indicate the knots
 abline(v=xi[2], lty=3)
 abline(v=xi[3], lty=3)
 
-###Selecting number of knots
+### Selecting number of knots
 plot(x,y,xlab="Solar capacity", ylab="Solar PV modul price")
 
-# first model with 2 internal knots
-m1cc<-lm(y~bs(x, df=5, degree=3)) 
-fit1<-predict(m1cc, data.frame(x=xxx))
-lines(xxx,fit1,col=4)
 
-# second model with no internal knots 
-m2cc <- lm(y ~ bs(x, df=3, degree=3)) 
-fit2<-predict(m2cc,data.frame(x=xxx))
-
-#plot(x,y,xlab="engine size", ylab="distance")
-lines(xxx,fit2,col=3)
-
-# Third model with 17 knots 
-m3cc<-lm(y~bs(x,df=20,degree=3))
+# Model with 1 internal knots 
+m3cc <- lm(y ~ bs(x, df=4, degree=3)) 
 fit3<-predict(m3cc,data.frame(x=xxx))
-
-#plot(x,y,xlab="engine size", ylab="distance")
 lines(xxx,fit3,col=2)
 
+# Model with 5 internal knots 
+m3cc <- lm(y ~ bs(x, df=8, degree=3))  # Choose this one
+fit3<-predict(m3cc,data.frame(x=xxx))
+lines(xxx,fit3,col=7)
+
+
+# Model with 2 internal knots
+m1cc<-lm(y~bs(x, df=5, degree=3)) 
+fit1<-predict(m1cc, data.frame(x=xxx)) ########## not good, gives negative values for price, also with 3 and 4 knots
+lines(xxx,fit1,col=4) 
+
+# Model with no internal knots 
+m2cc <- lm(y ~ bs(x, df=3, degree=3)) 
+fit2<-predict(m2cc,data.frame(x=xxx))  ############# not good, too simple
+lines(xxx,fit2,col=3)
+
+
+
+####################
 ###Smoothing splines
-plot(x,y,xlab="engine size", ylab="distance")
-s <- smooth.spline(x,y)
-lines(s)
+####################
+
+plot(x,y,xlab="Capacity (GW)", ylab="Price ($/W)")
 
 # Model 1
-plot(x,y,xlab="engine size", ylab="distance")
-s1 <- smooth.spline(x,y, lambda=0.0001)
-lines(s1)
-
+s1 <- smooth.spline(x,y, lambda=0.0001) # gives negative values for price
 p1<- predict(s1, x=xxx)
 lines(p1, col=2)
 
 # Model 2
-s2 <- smooth.spline(x,y, lambda=0.00001)
+s2 <- smooth.spline(x,y, lambda=0.001)  ## Choose this one
 p2<- predict(s2, x=xxx)
-lines(p2, col=3)
+lines(p2, col=7)
 
 # Model 3
-s3 <- smooth.spline(x,y, lambda=0.01)
+s3 <- smooth.spline(x,y, lambda=0.01)  # A bit simple
 p3<- predict(s3, x=xxx)
 lines(p3, col=4)
 
 # Model 4
-s4 <- smooth.spline(x,y, lambda=1)
+s4 <- smooth.spline(x,y, lambda=0.1) # too simple
 p4<- predict(s4, x=xxx)
-lines(p4, col=4)
+lines(p4, col=3)
 
-# Model 5
-s5 <- smooth.spline(x,y, lambda=0.00000001)
-p5<- predict(s5, x=xxx)
-lines(p5, col=4)
+
+```
+
+
+
+```{r Study different energy consumption, results=}
+
+# Show local regression, regression spline, smoothing spline in one plot
+
+plot(x,y,xlab="Capacity (GW)", ylab="Price ($/W)", main = "Modelling price of PV cells as a function of their capacity")
+sm.regression(x, y,   h = 3, add = T, ngrid=200, col=2)
+lines(xxx,fit3,col=3)
+lines(p2, col=4)
+legend("topright", legend=c("Local regression", "Regression spline", "Smoothig spline"),
+       col=c(2,3,4), lty = 1, cex=1.5, lwd = 3)
 
 ```
 
 
 
 
+# Modelling competition
+
 
 ```{r Study different energy consumption, results=}
-#####Study of comsuption of solar vs nuclear, wind, fossil, gas, oil, coal.
+#####Study of consumption of solar vs nuclear, wind, fossil, gas, oil, coal.
 
-df$mean_energy_capita <-  apply(df[,5:11],1,mean) #this i dont get it
+df$mean_energy_capita <-  apply(df[,5:11],1,mean) #this i don't get it # I would not do this
 
 SS <- df$Capita.solar.spain[25:57]
 SN <- df$Capita.nuclear[4:57]
@@ -781,7 +808,7 @@ SF <- df$Capita.fossil[1:57]
 SG <- df$Capita.gas[5:57]
 SO <- df$Capita.oil[1:57]
 SC <- df$Capita.coal[1:57]
-S_all_energy <- df$mean_energy_capita[1:57] #THIS IS NULL, HAVE TO CHECK
+S_all_energy <- df$mean_energy_capita[1:57] #THIS IS NULL, HAVE TO CHECK # I would not do this
 
 ```
 
@@ -791,10 +818,10 @@ S_all_energy <- df$mean_energy_capita[1:57] #THIS IS NULL, HAVE TO CHECK
 ##Competition between solar and nuclear
 
 #plot of two series
-plot(df$Year[4:57], SN, xlab = "Year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
+plot(df$Year[1:57], SN, xlab = "Year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
 points(df$Year[25:57], SS, type= "b", pch=16, lty=3, cex=0.7, col=2)
 
-ucrcdNS <-UCRCD(SN,SS, display=T) #the only one that gives me error
+ucrcdNS <-UCRCD(SN,SS, display=T, par = "unique", m2 = 12431) #the only one that gives me error
 summary(ucrcdNS)
 
 
@@ -823,7 +850,7 @@ points(capita_solar_spain$Year[25:57], SS, type= "b", pch=16, lty=3, cex=0.7, co
 lines(capita_wind$Year[25:57], (ucrcdWS$fitted.i[[1]]), lwd=2, col=1)
 lines(capita_solar_spain$Year[25:57], (ucrcdWS$fitted.i[[2]]), lwd=2, col=2)
 
-abline(v=1995, lty=2) #THIS I THINK DOESNT MAKE SENSE
+abline(v=1989, lty=2) #THIS I THINK DOESNT MAKE SENSE
 
 ```
 
@@ -844,27 +871,6 @@ points(df$Year[25:57],SS, type= "b", pch=16, lty=3, cex=0.7, col=2)
 lines(df$Year[1:57], (ucrcdFS$fitted.i[[1]]), lwd=2, col=1)
 lines(df$Year[25:57], (ucrcdFS$fitted.i[[2]]), lwd=2, col=2)
 abline(v=1989, lty=2)
-
-```
-
-
-
-```{r results = 'asis'}
-#competition between solar and wind
-
-plot(df$Year[25:57], SW, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
-points(df$Year[25:57], SS,type= "b", pch=16, lty=3, cex=0.7, col=2)
-
-ucrcdWS <-  UCRCD(SW,SS, display=T)
-summary(ucrcdWS)
-
-
-plot(df$Year[25:57], SW, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7)
-points(df$Year[25:57],SS, type= "b", pch=16, lty=3, cex=0.7, col=2)
-lines(df$Year[25:57], (ucrcdWS$fitted.i[[1]]), lwd=2, col=1)
-lines(df$Year[25:57], (ucrcdWS$fitted.i[[2]]), lwd=2, col=2)
-
-#abline(v=1995, lty=2) #SAME, NO SENSE FOR ME
 
 ```
 
@@ -933,8 +939,8 @@ abline(v=1989, lty=2)
 ```
 
 
-
 ```{r results = 'asis'}
+# I would not do this cell
 #Competition solar vs mean of all energy per capita 
 
 #THIS HAS TO BE CHECKED BECAUSE S_ALL_ENERGY IS NULL, DO WE NEED THIS??
@@ -960,156 +966,7 @@ text(1990, 0.8, pos=4, "All energy vs solar")
 
 
 
-
-
-```{r Competition spain vs Germany, China, USA, results=}
-### Study of comsuption of energy solar per capita of Spain vs Germany, China, USA
-
-S <- cap_solar_SP
-G <- df$Capita.solar.germany[26:57]
-C <- df$Capita.solar.china[26:57]
-U <- df$Capita.solar.usa[19:57]
-
-```
-
-
-
-```{r results = 'asis'}
-#competition between Spain and Germany
-
-#plot of two series
-plot(df$Year[26:57], G, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
-points(df$Year[25:57], S,type= "b", pch=16, lty=3, cex=0.7, col=2)
-
-ucrcdGS <- UCRCD(G,S, display=T)
-summary(ucrcdGS)
-
-
-plot(df$Year[26:57], G, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7)
-points(df$Year[25:57],S, type= "b", pch=16, lty=3, cex=0.7, col=2)
-lines(df$Year[26:57], (ucrcdGS$fitted.i[[1]]), lwd=2, col=1)
-lines(df$Year[25:57], (ucrcdGS$fitted.i[[2]]), lwd=2, col=2)
-
-abline(v=1989, lty=2)
-text(1990, 0.8, pos=4, " Germany vs Spain")
-
-############################ MAKES MORE SENSE TO START WITH SPAIN
-
-plot(capita_solar_spain$Year[25:57], S, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
-points(capita_solar_germany$Year[26:57], G,type= "b", pch=16, lty=3, cex=0.7, col=2)
-
-ucrcdGS <- UCRCD(S,G, display=T)
-summary(ucrcdGS)
-
-
-plot(capita_solar_spain$Year[25:57],S, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7)
-points(capita_solar_germany$Year[26:57],G, type= "b", pch=16, lty=3, cex=0.7, col=2)
-lines(capita_solar_spain$Year[25:57], (ucrcdGS$fitted.i[[1]]), lwd=2, col=1)
-lines(capita_solar_germany$Year[26:57], (ucrcdGS$fitted.i[[2]]), lwd=2, col=2)
-
-abline(v=1989, lty=2)
-text(1990, 0.8, pos=4, " Germany vs Spain")
-
-```
-
-
-
-```{r results = 'asis'}
-#Competition spain vs china
-
-#plot of two series
-plot(capita_solar_china$Year[26:57], C, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
-points(capita_solar_spain$Year[25:57], S,type= "b", pch=16, lty=3, cex=0.7, col=2)
-
-ucrcdCS <- UCRCD(C,S, display=T)
-summary(ucrcdCS)
-
-
-plot(capita_solar_china$Year[26:57], C, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7, ylim=c(0,1800))
-points(capita_solar_spain$Year[25:57],S, type= "b", pch=16, lty=3, cex=0.7, col=2)
-lines(capita_solar_china$Year[26:57], (ucrcdCS$fitted.i[[1]]), lwd=2, col=1)######################################################
-lines(capita_solar_spain$Year[25:57], (ucrcdCS$fitted.i[[2]]), lwd=2, col=2)
-
-abline(v=1989, lty=2)
-text(1990, 0.8, pos=4, "Spain vs China")
-
-
-######################## SAME HERE, SPAIN STARTS ONE YEAR BEFORE
-
-plot(capita_solar_spain$Year[25:57], S, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
-points(capita_solar_china$Year[26:57], C,type= "b", pch=16, lty=3, cex=0.7, col=2)
-
-ucrcdCS <- UCRCD(S,C, display=T)
-summary(ucrcdCS)
-
-
-plot(capita_solar_spain$Year[25:57], S, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7, ylim = c(0,1800))
-points(capita_solar_china$Year[26:57], C,type= "b", pch=16, lty=3, cex=0.7, col=2)
-lines(capita_solar_spain$Year[25:57], (ucrcdCS$fitted.i[[1]]), lwd=2, col=1)######################################################
-lines(capita_solar_china$Year[26:57], (ucrcdCS$fitted.i[[2]]), lwd=2, col=2)
-
-abline(v=1989, lty=2)
-text(1990, 0.8, pos=4, "Spain vs China")
-
-```
-
-
-
-```{r results = 'asis'}
-#Competition Spain vs USA
-
-#plot of two series
-plot(capita_solar_usa$Year[19:57], U, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7, ylim=c(0,1800))
-points(capita_solar_spain$Year[25:57], S,type= "b", pch=16, lty=3, cex=0.7, col=2)
-
-ucrcdUS <- UCRCD(U,S, display=T)
-summary(ucrcdUS)
-
-
-plot(capita_solar_usa$Year[19:57], U, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7, ylim=c(0,1800))
-points(capita_solar_spain$Year[25:57],S, type= "b", pch=16, lty=3, cex=0.7, col=2)
-lines(capita_solar_china$Year[19:57], (ucrcdUS$fitted.i[[1]]), lwd=2, col=1)
-lines(capita_solar_spain$Year[25:57], (ucrcdUS$fitted.i[[2]]), lwd=2, col=2)
-
-abline(v=1989, lty=2)
-text(2010, 0.8, pos=4, "Spain vs USA")
-
-```
-
-
-
-
-
-```{r results = 'asis'}
-
-
-
-
-```
-
-
-
-
-
-```{r results = 'asis'}
-
-
-
-
-```
-
-
-
-
-
-```{r results = 'asis'}
-
-
-
-
-```
-
-
+# Gam
 
 
 
@@ -1203,7 +1060,7 @@ AIC(gamscope2)
 
 #Prediction
 
-# make some variables factor
+# Predictions of splines
 pred.gam <- predict(gamscope,newdata=data.test)     
 dev.gam <- sum((pred.gam - data.test$Capita.solar.spain)^2)
 dev.gam
@@ -1212,6 +1069,14 @@ dev.gam
 pred.gam2 <- predict(gamscope2,newdata=data.test)     
 dev.gam2 <- sum((pred.gam2 - data.test$Capita.solar.spain)^2)
 dev.gam2
+
+# Residual analysis
+tsdisplay(residuals(gamscope))
+aar1<- auto.arima(residuals(ggamscope))
+
+plot(as.numeric(Capita.solar.spain), type="l")
+lines(fitted(aar1)+ fitted(gamscope), col=4)
+
 
 
 ```
@@ -1245,7 +1110,7 @@ AIC(gamscope)
 
 ```
 
-
+# Gradient boosting
 
 
 ```{r results = 'asis'}
@@ -1496,3 +1361,161 @@ err <- mean (( yhat.rf - data.test$Capita.solar.spain)^2)
 err
 
 ```
+
+
+
+
+
+
+
+# Modelling country competition 
+
+
+
+```{r Competition spain vs Germany, China, USA, results=}
+### Study of consuption of energy solar per capita of Spain vs Germany, China, USA
+
+S <- cap_solar_SP
+G <- df$Capita.solar.germany[26:57]
+C <- df$Capita.solar.china[26:57]
+U <- df$Capita.solar.usa[19:57]
+
+```
+
+
+
+```{r results = 'asis'}
+#competition between Spain and Germany
+
+#plot of two series
+plot(df$Year[26:57], G, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
+points(df$Year[25:57], S,type= "b", pch=16, lty=3, cex=0.7, col=2)
+
+ucrcdGS <- UCRCD(G,S, display=T)
+summary(ucrcdGS)
+
+
+plot(df$Year[26:57], G, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7)
+points(df$Year[25:57],S, type= "b", pch=16, lty=3, cex=0.7, col=2)
+lines(df$Year[26:57], (ucrcdGS$fitted.i[[1]]), lwd=2, col=1)
+lines(df$Year[25:57], (ucrcdGS$fitted.i[[2]]), lwd=2, col=2)
+
+abline(v=1989, lty=2)
+text(1990, 0.8, pos=4, " Germany vs Spain")
+
+############################ MAKES MORE SENSE TO START WITH SPAIN
+
+plot(capita_solar_spain$Year[25:57], S, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
+points(capita_solar_germany$Year[26:57], G,type= "b", pch=16, lty=3, cex=0.7, col=2)
+
+ucrcdGS <- UCRCD(S,G, display=T)
+summary(ucrcdGS)
+
+
+plot(capita_solar_spain$Year[25:57],S, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7)
+points(capita_solar_germany$Year[26:57],G, type= "b", pch=16, lty=3, cex=0.7, col=2)
+lines(capita_solar_spain$Year[25:57], (ucrcdGS$fitted.i[[1]]), lwd=2, col=1)
+lines(capita_solar_germany$Year[26:57], (ucrcdGS$fitted.i[[2]]), lwd=2, col=2)
+
+abline(v=1989, lty=2)
+text(1990, 0.8, pos=4, " Germany vs Spain")
+
+```
+
+
+
+```{r results = 'asis'}
+#Competition spain vs china
+
+#plot of two series
+plot(capita_solar_china$Year[26:57], C, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
+points(capita_solar_spain$Year[25:57], S,type= "b", pch=16, lty=3, cex=0.7, col=2)
+
+ucrcdCS <- UCRCD(C,S, display=T)
+summary(ucrcdCS)
+
+
+plot(capita_solar_china$Year[26:57], C, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7, ylim=c(0,1800))
+points(capita_solar_spain$Year[25:57],S, type= "b", pch=16, lty=3, cex=0.7, col=2)
+lines(capita_solar_china$Year[26:57], (ucrcdCS$fitted.i[[1]]), lwd=2, col=1)######################################################
+lines(capita_solar_spain$Year[25:57], (ucrcdCS$fitted.i[[2]]), lwd=2, col=2)
+
+abline(v=1989, lty=2)
+text(1990, 0.8, pos=4, "Spain vs China")
+
+
+######################## SAME HERE, SPAIN STARTS ONE YEAR BEFORE
+
+plot(capita_solar_spain$Year[25:57], S, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7)
+points(capita_solar_china$Year[26:57], C,type= "b", pch=16, lty=3, cex=0.7, col=2)
+
+ucrcdCS <- UCRCD(S,C, display=T)
+summary(ucrcdCS)
+
+
+plot(capita_solar_spain$Year[25:57], S, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7, ylim = c(0,1800))
+points(capita_solar_china$Year[26:57], C,type= "b", pch=16, lty=3, cex=0.7, col=2)
+lines(capita_solar_spain$Year[25:57], (ucrcdCS$fitted.i[[1]]), lwd=2, col=1)######################################################
+lines(capita_solar_china$Year[26:57], (ucrcdCS$fitted.i[[2]]), lwd=2, col=2)
+
+abline(v=1989, lty=2)
+text(1990, 0.8, pos=4, "Spain vs China")
+
+```
+
+
+
+```{r results = 'asis'}
+#Competition Spain vs USA
+
+#plot of two series
+plot(capita_solar_usa$Year[19:57], U, xlab = "year", ylab="Consumption per capita",type= "b", pch=16, lty=3, cex=0.7, ylim=c(0,1800))
+points(capita_solar_spain$Year[25:57], S,type= "b", pch=16, lty=3, cex=0.7, col=2)
+
+ucrcdUS <- UCRCD(U,S, display=T)
+summary(ucrcdUS)
+
+
+plot(capita_solar_usa$Year[19:57], U, xlab="year", ylab="Consumption per capita", type="b",pch=16, lty=3, cex=0.7, ylim=c(0,1800))
+points(capita_solar_spain$Year[25:57],S, type= "b", pch=16, lty=3, cex=0.7, col=2)
+lines(capita_solar_china$Year[19:57], (ucrcdUS$fitted.i[[1]]), lwd=2, col=1)
+lines(capita_solar_spain$Year[25:57], (ucrcdUS$fitted.i[[2]]), lwd=2, col=2)
+
+abline(v=1989, lty=2)
+text(2010, 0.8, pos=4, "Spain vs USA")
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
+
+
+
+
+```{r results = 'asis'}
+
+
+
+
+```
+
