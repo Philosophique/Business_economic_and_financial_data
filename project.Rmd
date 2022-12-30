@@ -258,12 +258,12 @@ summary(m_lm)
 plot(df$Year[25:57], cap_solar_SP, xlab="Time", ylab="Solar per capita kWh", type= "b",  pch=16, lty=3, cex=0.6)
 abline(m_lm, col=3)
 
-##check the residuals? are they auto correlated? Test of DW
+##Test of DW
 dwtest(m_lm)
 
 ##check the residuals
 res_lm<- residuals(m_lm)
-plot(df$Year[25:57], res_ml,xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
+plot(df$Year[25:57], res_lm, xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
 
 
 ```
@@ -293,14 +293,14 @@ plot(fore)
 
 # Calculate residuals and plot them
 res <- residuals(m_tslm)
-plot(res)
+plot(df$Year[25:57], res_lm, xlab="Time", ylab="residuals", type= "b",  pch=16, lty=3, cex=0.6)
 
 # Lets us calculate the autocorrelation function of the residuals
 Acf(res)
 
 # DW test
-dw <- dwtest(m_tslm)
-dw
+dwtest(m_tslm)
+
 #########
 ```
 
@@ -473,7 +473,7 @@ lines(x = c(1989:2022), fitted(arima1)[1:34], col=2)
 # Forecast
 for1<- forecast(arima1, 5)
 plot(for1, xaxt = 'n')
-axis(1, at=1:38, labels=c(1989:2026))
+axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 ```
 
@@ -492,7 +492,7 @@ lines(x = c(1989:2022), fitted(auto.a)[1:34], col=2)
 
 # Do forecast
 plot(forecast(auto.a, 5), xaxt='n')
-axis(1, at=1:38, labels=c(1989:2026))
+axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 
 #Check residuals
@@ -506,10 +506,10 @@ auto_with_reg <- auto.arima(cap_solar_SP, xreg = fit_GBM_SP)
 auto_with_reg
 summary(auto_with_reg)
 
-plot(df$Year[25:57],cap_solar_SP, type= "b",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=1, cex=0.6, col = 1)
+plot(df$Year[25:57],cap_solar_SP, type= "o",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=1, cex=0.6, col = 1)
 lines(df$Year[25:57], fit_GBM_SP_inst, lwd=1, lty=1, col = 2)
 lines(df$Year[25:57], fitted(auto_with_reg), lty=1,lwd=1, col=7)
-legend("topleft", legend=c("Data", "GGM fit", "Auto ARIMA with xreg"),
+legend("topleft", legend=c("Data", "GBM", "Auto ARIMA with xreg"),
        col=c(1,2,7),  lty = 1, cex=1.5, lwd = 3)
 
 
@@ -521,7 +521,7 @@ legend("topleft", legend=c("Data", "GGM fit", "Auto ARIMA with xreg"),
 
 ## All countries
 
-```{r china influence on cap_solar_SP, results=}
+```{r countries influence on cap_solar_SP, results=}
 
 # Let's see the influence of the solar energy consumption in China over the one in Spain
 
@@ -529,8 +529,7 @@ legend("topleft", legend=c("Data", "GGM fit", "Auto ARIMA with xreg"),
 xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
               China=df$Capita.solar.china[25:57],
               USA=df$Capita.solar.usa[25:57],
-              India=df$Capita.solar.india[25:57],
-              Australia=df$Capita.solar.australia[25:57])
+              India=df$Capita.solar.india[25:57])
 
 armax_all_countries <- auto.arima(cap_solar_SP, xreg = xreg)
 summary(armax_all_countries)
@@ -544,15 +543,15 @@ plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
 lines(df$Year[25:57],fitted_all_countries, col = 2)
 
 # Do forecast
-forecast(armax_all_countries, 5, xreg = xreg)
+forecast(armax_all_countries, 4, xreg = xreg)
 plot(forecast(armax_all_countries, 5, xreg = matrix(xreg, ncol=20)), xaxt='n')
-axis(1, at=1:38, labels=c(1989:2026))
+axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 ```
 
 ## Countries + price + capacity + share
 
-```{r china influence on cap_solar_SP, results=}
+```{r all influence on cap_solar_SP, results=}
 
 # Let's see the influence of the solar energy consumption in China over the one in Spain
 
@@ -576,10 +575,10 @@ fitted_all <- fitted(armax_all)
 plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
 lines(df$Year[25:57],fitted_all, col = 2)
 
-# # Do forecast
-forecast(armax_all, 5, xreg = xreg)
+# Do forecast
+forecast(armax_all, 7, xreg = xreg)
 plot(forecast(armax_all, 5, xreg = xreg), xaxt='n')
-# axis(1, at=1:38, labels=c(1989:2026))
+axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 ```
 
@@ -777,7 +776,7 @@ lines(p4, col=3)
 
 
 
-```{r Study different energy consumption, results=}
+```{r Study different energy consumption plot together, results=}
 
 # Show local regression, regression spline, smoothing spline in one plot
 
