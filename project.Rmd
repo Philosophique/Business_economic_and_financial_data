@@ -501,18 +501,37 @@ checkresiduals(auto.a)
 
 
 ####SARMAX refinement
-####SARMAX model with external covariate 'fit_GBM_SP' 
-auto_with_reg <- auto.arima(cap_solar_SP, xreg = fit_GBM_SP)
+####SARMAX model with external covariate 'fit_GGM_SP' 
+auto_with_reg <- auto.arima(cap_solar_SP, xreg = pred_GGM_SP.inst[1:33])
 auto_with_reg
 summary(auto_with_reg)
 
 plot(df$Year[25:57],cap_solar_SP, type= "o",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=1, cex=0.6, col = 1)
-lines(df$Year[25:57], fit_GBM_SP_inst, lwd=1, lty=1, col = 2)
+lines(df$Year[25:57], pred_GGM_SP.inst[1:33], lwd=1, lty=1, col = 2)
+lines(df$Year[25:57], fitted(auto_with_reg), lty=1,lwd=1, col=7)
+legend("topleft", legend=c("Data", "GGM", "Auto ARIMA with xreg"),
+       col=c(1,2,7),  lty = 1, cex=1.5, lwd = 3)
+
+plot(forecast(auto_with_reg, xreg = pred_GGM_SP.inst[34:39]), xaxt='n')
+axis(1, at = seq(1, 34, by=5), labels=seq(1989, 2022, by=5))
+
+
+
+
+####SARMAX refinement
+####SARMAX model with external covariate 'fit_GBM_SP' 
+auto_with_reg <- auto.arima(cap_solar_SP, xreg = pred_GBM_SP_e2.inst[1:33])
+auto_with_reg
+summary(auto_with_reg)
+
+plot(df$Year[25:57],cap_solar_SP, type= "o",xlab="Quarter", ylab="Quarterly revenues",  pch=16, lty=1, cex=0.6, col = 1)
+lines(df$Year[25:57], pred_GBM_SP_e2.inst[1:33], lwd=1, lty=1, col = 2)
 lines(df$Year[25:57], fitted(auto_with_reg), lty=1,lwd=1, col=7)
 legend("topleft", legend=c("Data", "GBM", "Auto ARIMA with xreg"),
        col=c(1,2,7),  lty = 1, cex=1.5, lwd = 3)
 
-
+plot(forecast(auto_with_reg, xreg = pred_GBM_SP_e2.inst[34:35]), xaxt='n')
+axis(1, at = seq(1, 34, by=5), labels=seq(1989, 2022, by=5))
 
 ```
 
@@ -522,9 +541,6 @@ legend("topleft", legend=c("Data", "GBM", "Auto ARIMA with xreg"),
 ## All countries
 
 ```{r countries influence on cap_solar_SP, results=}
-
-# Let's see the influence of the solar energy consumption in China over the one in Spain
-
 
 xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
               China=df$Capita.solar.china[25:57],
@@ -542,11 +558,6 @@ fitted_all_countries <- fitted(armax_all_countries)
 plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
 lines(df$Year[25:57],fitted_all_countries, col = 2)
 
-# Do forecast
-forecast(armax_all_countries, 4, xreg = xreg)
-plot(forecast(armax_all_countries, 5, xreg = matrix(xreg, ncol=20)), xaxt='n')
-axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
-
 ```
 
 ## Countries + price + capacity + share
@@ -555,6 +566,43 @@ axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 # Let's see the influence of the solar energy consumption in China over the one in Spain
 
+
+xreg <- cbind(Germany=df$Capita.solar.germany[25:54], 
+              China=df$Capita.solar.china[25:54],
+              USA=df$Capita.solar.usa[25:54],
+              India=df$Capita.solar.india[25:54],
+              Price = df$PV.price[25:54],
+              Capacity = df$PV.capacity[25:54],
+              Share = df$Share.from.solar[25:54])
+
+armax_all <- auto.arima(cap_solar_SP[1:30], xreg = xreg)
+summary(armax_all)
+# Residuals
+res_all <- residuals(armax_all)
+Acf(res_all)
+
+fitted_all <- fitted(armax_all)
+
+plot(df$Year[25:54], cap_solar_SP[1:30], type= "b", pch=16, lty=3, cex=0.6)
+lines(df$Year[25:54],fitted_all, col = 2)
+
+
+xreg_forecast <- cbind(Germany=df$Capita.solar.germany[54:57], 
+                 China=df$Capita.solar.china[54:57],
+                 USA=df$Capita.solar.usa[54:57],
+                 India=df$Capita.solar.india[54:57],
+                 Price = df$PV.price[54:57],
+                 Capacity = df$PV.capacity[54:57],
+                 Share = df$Share.from.solar[54:57])
+
+
+# Do forecast
+plot(forecast(armax_all, xreg = xreg_forecast), xaxt='n')
+axis(1, at = seq(1, 34, by=5), labels=seq(1989, 2022, by=5))
+
+
+
+############################# If not to forecast: ##############################
 
 xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
               China=df$Capita.solar.china[25:57],
@@ -574,11 +622,6 @@ fitted_all <- fitted(armax_all)
 
 plot(df$Year[25:57], cap_solar_SP, type= "b", pch=16, lty=3, cex=0.6)
 lines(df$Year[25:57],fitted_all, col = 2)
-
-# Do forecast
-forecast(armax_all, 7, xreg = xreg)
-plot(forecast(armax_all, 5, xreg = xreg), xaxt='n')
-axis(1, at = seq(1, 38, by=5), labels=seq(1989, 2026, by=5))
 
 ```
 
@@ -609,11 +652,12 @@ df_capacity_transformed[is.na(df_capacity_transformed)] <- 0 #Convert NA to 0
 
 #Using Pearson correlation, Spain vs all
 cor_spain_vs_all <- cor(df_capacity_transformed[ , colnames(df_capacity_transformed) != "Spain"], df_capacity_transformed$Spain)
-cor_spain_vs_all #Portugal with 0.9449656, Belgium 0.9423068 and Australia 0.9409159 are the country with higher Pearson correlation. Lets look at cross-correlation function (using lagged values of these countrie to predict current value of Spain)
+cor_spain_vs_all #Portugal with 0.9449656, Belgium 0.9423068 and Australia 0.9409159 are the country with higher Pearson correlation. Lets look at cross-correlation function (using lagged values of these countries to predict current value of Spain)
 
-ccf_spain_portugal <- ccf(df_capacity_transformed$Portugal, df_capacity_transformed$Spain,26) 
+ccf_spain_portugal <- ccf(df_capacity_transformed$Portugal, df_capacity_transformed$Spain,10) 
+ccf_portugal_spain <- ccf(df_capacity_transformed$Spain, df_capacity_transformed$Portugal,10)
 
-ccf_spain_belgium <- ccf(df_capacity_transformed$Belgium, df_capac_transformed$Spain,26)
+ccf_spain_belgium <- ccf(df_capacity_transformed$Belgium, df_capacity_transformed$Spain,10)
 
 ccf_spain_australia <- ccf(df_capacity_transformed$Australia, df_capacity_transformed$Spain,26)
 #from correlogram plot, it doesnt seems like the spending of any of theses three countries in solar capacity leads to en increase in spending in solar capacity for spain. They are correlatated, but the lagged values of theses three countries doesnt have a impact of current value of Spain, and it seems that is might be the opposite. 
