@@ -244,11 +244,11 @@ plot(x = df$Year[25:57], cap_solar_SP,  xlab="Year", ylab="Per capita consumptio
 plot(cumsum(cap_solar_SP), x = df$Year[25:57], type="b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 
 acf1 <- acf(cap_solar_SP)
-plot(acf1, type = "h", xlab = "Lag", main = "Autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(acf1, xlab = "Lag", main = "Autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 ```
 
-LM
+## LM
 
 ```{r Cap_solar_SP linear regression, results=}
 
@@ -270,7 +270,7 @@ plot(df$Year[25:57], res_lm, xlab="Year", ylab="Residuals (kWh)", type= "b",  pc
 
 ```
 
-TsLM
+## TsLM
 
 
 ```{r , results=}
@@ -301,7 +301,7 @@ plot(df$Year[25:57], res_lm, xlab="Time", ylab="Residuals (kWh)", type= "b",  pc
 
 # Lets us calculate the autocorrelation function of the residuals
 res1 <- Acf(res)
-plot(res1, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(res1, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 
  # DW test
@@ -401,7 +401,7 @@ lines(x = c(1989:2021), fit_GBM_SP_inst, lwd=2, col=2)
 res_GBM_SP<- residuals(GBM_SP_e2)
 res2 <- acf(res_GBM_SP)
 
-plot(res2, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(res2, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 
   
@@ -436,7 +436,7 @@ res_GGM_SP<- residuals(GGM_SP)
 plot(res_GGM_SP)
 res3 <- acf(residuals(GGM_SP))
 
-plot(res3, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(res3, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 ```
 
@@ -462,18 +462,19 @@ dev.off()
 
 ```{r cap_solar_SP Arima, results=}
 
-# Let's begin with Arima
-
-cap_solar_SP <- df$Capita.solar.spain[25:57] # erase this later, it's repeated
-
 plot(x = df$Year[25:57],cap_solar_SP, type= "b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
-acf2 <- Acf(cap_solar_SP)
 
-plot(acf2, type = "h", xlab = "Lag", main = "Autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+
+acf2 <- Acf(cap_solar_SP)
+png(file="plots/acf_solar.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(acf2, xlab = "Lag", ylab = "ACF", main = "Autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
+dev.off()
 
 
 pacf <- Pacf(cap_solar_SP)
-plot(pacf, type = "h", xlab = "Lag", main = "Partial autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+png(file="plots/pacf_solar.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(pacf, xlab = "Lag", ylab = "Partial ACF", main = "Partial autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
+dev.off()
 
 ```
 
@@ -588,7 +589,7 @@ summary(armax_all_countries)
 res_all_countries <- residuals(armax_all_countries)
 
 res4 <- Acf(res_all_countries)
-plot(res4, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(res4, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 fitted_all_countries <- fitted(armax_all_countries)
 
@@ -619,7 +620,7 @@ summary(armax_all)
 # Residuals
 res_all <- residuals(armax_all)
 res5 <- Acf(res_all)
-plot(res5, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(res5, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 fitted_all <- fitted(armax_all)
 
@@ -658,7 +659,7 @@ summary(armax_all)
 res_all <- residuals(armax_all)
 res6 <- Acf(res_all)
 
-plot(res6, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+plot(res6, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 fitted_all <- fitted(armax_all)
 
@@ -734,7 +735,7 @@ res.india = residuals(auto.arima.india)
 # Check cross correlation plots of residuals for most significant countries.
 
 png(file="plots/portugal_vs_spain.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-ccf_spain_portugal <- ccf(res.portugal, res.spain,10, main = "Portugal vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5) # Spain leads Portugal (positive cross correlation at lag 2) 
+ccf_spain_portugal <- ccf(res.portugal, res.spain,10, main = "Portugal vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) # Spain leads Portugal (positive cross correlation at lag 2) 
 dev.off()
 
 ccf_spain_portugal <- ccf(res.usa, res.spain,10)      # Not really clear
@@ -744,11 +745,11 @@ ccf_spain_portugal <- ccf(res.china, res.spain,10)  # Not really clear
 ccf_spain_portugal <- ccf(res.india, res.spain,10)  # Not really clear
 
 png(file="plots/germany_vs_spain.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-ccf_spain_portugal <- ccf(res.germany, res.spain,10, main = "Germany vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5) #Germany leads Spain (negative cross correlation at lag 6)
+ccf_spain_portugal <- ccf(res.germany, res.spain,10, main = "Germany vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) #Germany leads Spain (negative cross correlation at lag 6)
 dev.off()
 
 png(file="plots/france_vs_spain.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-ccf_spain_portugal <- ccf(res.france, res.spain,10, main = "France vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5) # Spain leads France (positive cross correlation at lag 2) 
+ccf_spain_portugal <- ccf(res.france, res.spain,10, main = "France vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) # Spain leads France (positive cross correlation at lag 2) 
 dev.off()
 
 ```
@@ -941,8 +942,6 @@ SC <- df$Capita.coal[1:57]
 
 ```{r results = 'asis'}
 ##Competition between solar and nuclear
-
-#plot of two series
 
 ucrcdNS <-UCRCD(SN,SS, display=T, m2 = 12431) #the only one that gives me error
 summary(ucrcdNS)
