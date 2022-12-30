@@ -242,7 +242,9 @@ Plot the data and the autocorrelation plot.
 
 plot(x = df$Year[25:57], cap_solar_SP,  xlab="Year", ylab="Per capita consumption (kWh)", type= "b",  pch=16, lty=3, cex=0.6) #from 1989 to 2021
 plot(cumsum(cap_solar_SP), x = df$Year[25:57], type="b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
-acf(cap_solar_SP)
+
+acf1 <- acf(cap_solar_SP)
+plot(acf1, type = "h", xlab = "Lag", main = "Autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
 ```
 
@@ -298,9 +300,11 @@ res <- residuals(m_tslm)
 plot(df$Year[25:57], res_lm, xlab="Time", ylab="Residuals (kWh)", type= "b",  pch=16, lty=3, cex=0.6)
 
 # Lets us calculate the autocorrelation function of the residuals
-Acf(res)
+res1 <- Acf(res)
+plot(res1, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
-# DW test
+
+ # DW test
 dwtest(m_tslm)
 
 #########
@@ -393,7 +397,11 @@ lines(x = c(1989:2021), fit_GBM_SP_inst, lwd=2, col=2)
 
 ###Analysis of residuals
 res_GBM_SP<- residuals(GBM_SP_e2)
-acf<- acf(res_GBM_SP)
+res2 <- acf(res_GBM_SP)
+
+plot(res2, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+
+
   
 ```
 
@@ -422,7 +430,9 @@ lines(x = c(1989:2021), fit_GGM_SP_inst, lwd=2, col=2)
 
 ###Analysis of residuals
 res_GGM_SP<- residuals(GGM_SP)
-acf<- acf(residuals(GGM_SP))
+res3 <- acf(residuals(GGM_SP))
+
+plot(res3, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
 ```
 
@@ -452,8 +462,13 @@ legend("topleft", legend=c("Data", "BM", "GBM with two exp shocks", "GGM"),
 cap_solar_SP <- df$Capita.solar.spain[25:57] # erase this later, it's repeated
 
 plot(x = df$Year[25:57],cap_solar_SP, type= "b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
-Acf(cap_solar_SP)
-Pacf(cap_solar_SP)
+acf2 <- Acf(cap_solar_SP)
+
+plot(acf2, type = "h", xlab = "Lag", main = "Autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
+
+
+pacf <- Pacf(cap_solar_SP)
+plot(pacf, type = "h", xlab = "Lag", main = "Partial autocorrelation of solar consumption", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
 ```
 
@@ -560,7 +575,9 @@ armax_all_countries <- auto.arima(cap_solar_SP, xreg = xreg)
 summary(armax_all_countries)
 # Residuals
 res_all_countries <- residuals(armax_all_countries)
-Acf(res_all_countries)
+
+res4 <- Acf(res_all_countries)
+plot(res4, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
 fitted_all_countries <- fitted(armax_all_countries)
 
@@ -591,7 +608,8 @@ armax_all <- auto.arima(cap_solar_SP[1:30], xreg = xreg)
 summary(armax_all)
 # Residuals
 res_all <- residuals(armax_all)
-Acf(res_all)
+res5 <- Acf(res_all)
+plot(res5, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
 fitted_all <- fitted(armax_all)
 
@@ -628,7 +646,9 @@ armax_all <- auto.arima(cap_solar_SP, xreg = xreg)
 summary(armax_all)
 # Residuals
 res_all <- residuals(armax_all)
-Acf(res_all)
+res6 <- Acf(res_all)
+
+plot(res6, type = "h", xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5)
 
 fitted_all <- fitted(armax_all)
 
