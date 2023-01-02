@@ -669,7 +669,7 @@ lines(df$Year[25:57],fitted_all, lwd =2, col = 2)
 ```
 
 
-# Check this
+# Study of influence of certain countries
 
 ```{r Installed solar capacity of spain vs world, results=}
 #Inspecting if the installed solar energy capacity of Spain is influenced by the one of another country.
@@ -1073,11 +1073,7 @@ dev.off()
 ###############################################################################
 
 set.seed(1)
-data <- df[25:57,]
-
-# Check structure and summary of data
-str(data)
-summary(data)
+data <- df[25:57,1:16]
 
 # #transform variable year in format "date"
 # data$Year <- as.Date(data$Year, "%Y")
@@ -1094,7 +1090,10 @@ for(i in c(1:14)){
 par(mfrow=c(1,1))
 corr_coef <- cor(data, use="complete.obs")
 round(corr_coef,2)
-ggcorrplot(corr_coef, hc.order = TRUE, type = "lower", lab = TRUE)
+png(file="plots/correlation.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+ggcorrplot(corr_coef, hc.order = TRUE, type = "lower", lab = TRUE, tl.cex = 8, lab_size = 2, legend.title = "Correlation", colors = c("#CC0000", "white", "#FEDE00") ) +
+theme(legend.title = element_text(size = 10))
+dev.off()
 
 # Train-test split
 train = sample(1:nrow(data), 0.7*nrow(data))
@@ -1106,24 +1105,37 @@ data.test=data[-train ,]
 #########################
 
 # Try full linear model first
-m1 <- lm(Capita.solar.spain ~ ., data=data.train)
+m1 <- lm(Capita.solar.spain ~ . - Capita.fossil, data=data.train)
 summary(m1)
+AIC(m1)
+
+pred.lm1 <- predict(m1, newdata=data.test)
+deviance.lm1 <- sum((pred.lm1 - data.test$Capita.solar.spain)^2)
+deviance.lm1
+mse.lm1 <- mean((pred.lm1 - data.test$Capita.solar.spain)^2)
+mse.lm1
+
 
 # Try stepwise regression to reduce the number of features
 m2 <- step(m1, direction="both") # both backward and forward selection together.
 summary(m2)
 AIC(m2)
 
-pred.lm <- predict(m2, newdata=data.test)
-deviance.lm <- sum((pred.lm-data.test$Capita.solar.spain)^2)
-deviance.lm
+pred.lm2 <- predict(m2, newdata=data.test)
+deviance.lm2 <- sum((pred.lm2 - data.test$Capita.solar.spain)^2)
+deviance.lm2
+mse.lm2 <- mean((pred.lm2 - data.test$Capita.solar.spain)^2)
+mse.lm2
 
 ##########################
 ####GAM Model#########
 #########################
 
 #Start with a linear model (df=1)
-gamodel <- gam(Capita.solar.spain ~ ., data=data.train)
+gamodel <- gam(Capita.solar.spain ~ . - Capita.fossil, data=data.train)
+summary(gamodel)
+AIC(gamodel)
+
 
 #Show the linear effects 
 par(mfrow=c(3,5))
@@ -1132,9 +1144,9 @@ plot(gamodel, se=T)
 #Perform stepwise selection using gam scope
 #Values for df should be greater than 1, with df=1 implying a linear fit
 
-sc = gam.scope(data.train[,-5], response=5, smoother = "s", arg=c("df=2","df=3","df=4")) # arg specifies some degrees of freedom (df = 1 linear fit...)
+sc = gam.scope(data.train[,-c(5,9)], response=5, smoother = "s", arg=c("df=2","df=3","df=4")) # arg specifies some degrees of freedom (df = 1 linear fit...)
 gamscope<- step.Gam(gamodel, scope=sc, trace=T, direction = c("both"))
-sc2 = gam.scope(data.train[,-5], response=5, smoother = "lo", arg=c("df=2","df=3","df=4")) # loess smoother
+sc2 = gam.scope(data.train[,-c(5,9)], response=5, smoother = "lo", arg=c("df=2","df=3","df=4")) # loess smoother
 gamscope2<- step.Gam(gamodel, scope=sc2, trace=T, direction = c("both"))
 
 
@@ -1160,17 +1172,23 @@ AIC(gamscope2)
 pred.gam <- predict(gamscope,newdata=data.test)     
 dev.gam <- sum((pred.gam - data.test$Capita.solar.spain)^2)
 dev.gam
+mse.gam <- mean((pred.gam - data.test$Capita.solar.spain)^2)
+mse.gam
 
 # Predictions of loess smoother
 pred.gam2 <- predict(gamscope2,newdata=data.test)     
 dev.gam2 <- sum((pred.gam2 - data.test$Capita.solar.spain)^2)
 dev.gam2
+mse.gam2 <- mean((pred.gam2 - data.test$Capita.solar.spain)^2)
+mse.gam2
 
 # Residual analysis
-tsdisplay(residuals(gamscope))
-aar1<- auto.arima(residuals(ggamscope))
+png(file="plots/residuals_gam.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+tsdisplay(residuals(gamscope), main = "Residuals of GAM with smoothing splines", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
+dev.off()
 
-plot(as.numeric(Capita.solar.spain), type="l")
+aar1<- auto.arima(residuals(gamscope))
+plot(data.train$Capita.solar.spain, type="l")
 lines(fitted(aar1)+ fitted(gamscope), col=4)
 
 
@@ -1184,12 +1202,12 @@ lines(fitted(aar1)+ fitted(gamscope), col=4)
 
 # Try bulding own gam model
 
-gam.m1 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) ,data= data.train)
-gam.m2 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) , data= data.train)
-gam.m3 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) , data= data.train)
-gam.m4 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear, data= data.train)
-gam.m5 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear + Capita.wind , data= data.train)
-gam.m6 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear + Capita.wind + Capita.oil , data= data.train)
+gam.m1 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) - Capita.fossil ,data= data.train)
+gam.m2 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) - Capita.fossil , data= data.train )
+gam.m3 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) - Capita.fossil, data= data.train)
+gam.m4 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear - Capita.fossil, data= data.train)
+gam.m5 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear + Capita.wind - Capita.fossil , data= data.train)
+gam.m6 = gam(Capita.solar.spain ~ s(Capita.solar.china ,2) + s(Capita.gas,4) + lo(Share.from.solar, 3) + lo(Capita.fossil, df = 2) + Capita.nuclear + Capita.wind + Capita.oil - Capita.fossil , data= data.train)
 
 anova (gam.m1 , gam.m2 , gam.m3, gam.m4 , gam.m5 , gam.m6 ,test ="F")
 
@@ -1238,10 +1256,8 @@ plot(t1b)
 
 J <- t1b$size[which.min(t1b$dev)]
 
-t1c <- prune.tree(t1a, best=J)
 
-plot(t1c)
-text(t1c)
+t1c <- prune.tree(t1a, best=J)
 
 plot(t1c)
 text(t1c, pretty=4, cex=0.7)
@@ -1251,8 +1267,8 @@ text(t1c, pretty=4, cex=0.7)
 
 # make some variables factor
 p.tree <- predict(t1c,newdata=data.test)     
-dev.tree <- sum((p.tree-data.test$Capita.solar.spain)^2)
-dev.tree
+mse.tree <- mean((p.tree-data.test$Capita.solar.spain)^2)
+mse.tree
 
 
 
@@ -1268,46 +1284,23 @@ dev.tree
 ################################
 
 # 1 Boosting- 
-boost.capita = gbm(Capita.solar.spain ~ ., data=data.train, 
+boost.capita = gbm(Capita.solar.spain ~ . - Capita.fossil, data=data.train, 
                  distribution="gaussian", n.trees=500, interaction.depth=1, bag.fraction = 0.95)
 
 #for the plot
 par(mfrow=c(1,1))
 
 #plot of training error
-plot(boost.capita$train.error, type="l", ylab="training error")
+plot(boost.capita$train.error, type="l", ylab="training error")#always decreasing with increasing number of trees
 
-#always decreasing with increasing number of trees
-#
-#
-#relative influence plot
-summary(boost.capita) 
-#let us modify the graphical parameters to obtain a better plot
-#
-#more space on the left
-#
-# default vector of parameters
-mai.old<-par()$mai
-mai.old
-#new vector
-mai.new<-mai.old
-#new space on the left
-mai.new[2] <- 2.5 
-mai.new
-#modify graphical parameters
+# Feature importance plot
 par(mai=mai.new)
-summary(boost.capita, las=1) 
-#las=1 horizontal names on y
-summary(boost.capita, las=1, cBar=10) # cbar to say how many variables in the plot
-#cBar defines how many variables
-#back to orginal window
+summary(boost.capita, las=1, cBar=10) 
 par(mai=mai.old)
 
 
 
 # test set prediction for every tree (1:500)
-
-
 yhat.boost=predict(boost.capita, newdata=data.test, n.trees=1:500)
 
 # calculate the error for each iteration
@@ -1320,17 +1313,20 @@ err = apply(yhat.boost, 2, function(pred) mean((data.test$Capita.solar.spain - p
 plot(err, type="l")
 
 # error comparison (train e test)
-plot(boost.capita$train.error, type="l")
-lines(err, type="l", col=2)
+plot(boost.capita$train.error, type="l", col = 1, lwd = 2, ylab = "Error", xlab = "Number of trees", cex.lab = 1.5)
+lines(err, type="l", col=7, lwd = 2)
+legend("topright", legend=c("Train", "Test"),
+       col=c(1,7),  lty = 1, cex=1.5, lwd = 3)
+
 #minimum error in test set
 best=which.min(err)
-abline(v=best, lty=2, col=4)
+abline(v=best, lty=2, col=2)
 #
 min(err) #minimum error
 
 
 # 2 Boosting - Deeper trees
-boost.capita.deeper=gbm(Capita.solar.spain ~ ., data=data.train, 
+boost.capita.deeper=gbm(Capita.solar.spain ~ . - Capita.fossil, data=data.train, 
                  distribution="gaussian", n.trees=500, interaction.depth=4, bag.fraction = 0.95)
 
 plot(boost.capita.deeper$train.error, type="l")
@@ -1355,7 +1351,7 @@ min(err)
 
 # 3 Boosting - Smaller learning rate 
 
-boost.capita.lr=gbm(Capita.solar.spain ~ ., data=data.train, bag.fraction = 0.95, 
+boost.capita.lr=gbm(Capita.solar.spain ~ . - Capita.fossil, data=data.train, bag.fraction = 0.95, 
                  distribution="gaussian", n.trees=500, interaction.depth=1, shrinkage=0.01)
 plot(boost.capita.lr$train.error, type="l")
 
@@ -1377,7 +1373,7 @@ min(err)
 
 
 # 4 Boosting - combination of previous models
-boost.capita.comb=gbm(Capita.solar.spain ~ . ,data=data.train, bag.fraction = 0.95,
+boost.capita.comb=gbm(Capita.solar.spain ~ . - Capita.fossil,data=data.train, bag.fraction = 0.95,
                  distribution="gaussian",n.trees=5000, interaction.depth=2, shrinkage=0.01)
 
 plot(boost.capita.comb$train.error, type="l")
@@ -1385,7 +1381,22 @@ plot(boost.capita.comb$train.error, type="l")
 
 par(mai=mai.new)
 
-summary(boost.capita.comb, las=1, cBar=10) 
+png(file="plots/boosting_importances.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+mai.old<-par()$mai
+mai.old
+#new vector
+mai.new<-mai.old
+#new space on the left
+mai.new[2] <- 1
+mai.new
+#modify graphical parameters
+par(mai=mai.new)
+# summary(boost.capita, las=1) 
+#las=1 horizontal names on y
+summary(boost.capita.comb, las=1, cBar=10, cex.lab = 1.5, cex.names = 1.1) # cbar to say how many variables in the plot
+#back to original window
+par(mai=mai.old)
+dev.off()
 
 par(mai=mai.old)
 
@@ -1393,14 +1404,16 @@ yhat.boost=predict(boost.capita.comb ,newdata=data.test,n.trees=1:5000)
 err = apply(yhat.boost, 2, function(pred) mean((data.test$Capita.solar.spain-pred)^2))
 plot(err, type="l")
 
-
-plot(boost.capita.comb$train.error, type="l")
-lines(err, type="l", col=2)
+png(file="plots/train_test.png", width=14,height=12,units="cm",res=1200, pointsize=6)
+plot(boost.capita.comb$train.error, type="l", col = 1, lwd = 2, ylab = "Error", xlab = "Number of trees", cex.lab = 1.5)
+lines(err, type="l", col=7, lwd = 2)
+legend("topright", legend=c("Train", "Test"),
+       col=c(1,7),  lty = 1, cex=2, lwd = 3)
+dev.off()
 best=which.min(err)
 abline(v=best, lty=2, col=4)
-min(err)
 err.boost= min(err)
-
+err.boost
 
 boost.capita.comb
 # partial dependence plots
@@ -1438,17 +1451,17 @@ set.seed (1)
 
 
 # Bagging
-rf.capita= randomForest(Capita.solar.spain ~ ., data=data.train , mtry = 13, importance = TRUE, ntree = 250) # All 13 predictors considered = bagging is done
+rf.capita.b= randomForest(Capita.solar.spain ~ . - Capita.fossil, data=data.train , mtry = 15, importance = TRUE, ntree = 250) # All 13 predictors considered = bagging is done
 
-yhat.rf = predict(rf.capita , newdata = data.test)
-plot( yhat.rf , data.test$Capita.solar.spain)
+yhat.rf.b = predict(rf.capita.b , newdata = data.test)
+plot( yhat.rf.b , data.test$Capita.solar.spain)
 abline (0 ,1)
-err <- mean (( yhat.rf - data.test$Capita.solar.spain)^2)
-err
+err.b <- mean (( yhat.rf.b - data.test$Capita.solar.spain)^2)
+err.b
 
 
 # Random Forest
-rf.capita= randomForest(Capita.solar.spain ~ ., data=data.train , mtry = 6, importance = TRUE, ntree = 200)
+rf.capita= randomForest(Capita.solar.spain ~ . - Capita.fossil, data=data.train , mtry = 6, importance = TRUE, ntree = 200)
 
 yhat.rf = predict(rf.capita , newdata = data.test)
 plot( yhat.rf , data.test$Capita.solar.spain)
@@ -1459,50 +1472,4 @@ err
 ```
 
 
-
-
-```{r results = 'asis'}
-
-
-
-```
-
-
-
-```{r results = 'asis'}
-
-
-
-```
-
-
-
-
-```{r results = 'asis'}
-
-
-
-```
-
-
-
-
-
-```{r results = 'asis'}
-
-
-
-
-```
-
-
-
-
-
-```{r results = 'asis'}
-
-
-
-
-```
 
