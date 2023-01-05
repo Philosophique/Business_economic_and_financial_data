@@ -206,7 +206,7 @@ lines(df2$Year, df2$Capita.gas, type = "o", col = 6, pch = 16)
 lines(df2$Year, df2$Capita.wind, type = "o", col = 4, pch = 16)
 lines(df2$Year, df2$Capita.coal, type = "o", col = 1, pch = 16)
 legend("topright", legend=c("Solar", "Wind", "Nuclear", "Coal", "Gas","Oil"),
-       col=c(7,4,3,1,6,2),  lty = 1, cex=1, lwd = 3)
+       col=c(7,4,3,1,6,2),  lty = 1, cex=1.5, lwd = 3)
 dev.off()
 
 
@@ -262,7 +262,7 @@ plot(df$Year[25:57], cap_solar_SP, xlab="Year", ylab="Per capita consumption (kW
 abline(m_lm, lwd=2, col=3)
 
 ##Test of DW
-dwtest(m_lm) #0.199 so strong positive autocorrelation 
+dwtest(m_lm)
 
 ##check the residuals
 res_lm<- residuals(m_lm)
@@ -327,12 +327,6 @@ pred.inst_SP<- make.instantaneous(pred_bm_SP)
 ###plot of fitted model 
 plot(x = df$Year[25:57], cap_solar_SP, type= "b",xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 lines(x = c(1989:2022), pred.inst_SP[1:34], lwd=2, col=2)
-
-###Analysis of residuals
-
-res_BM_SP<- residuals(bm_SP)
-plot(res.BM_SP, xlab="Year", ylab="Residuals (kWh)", type= "b",  pch=16, lty=3, cex=0.6)
-
 
 ```
 
@@ -410,7 +404,6 @@ res2 <- acf(res_GBM_SP)
 
 plot(res2, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
-plot(res_GBM_SP, xlab="Year", ylab="Residuals (kWh)", type= "b",  pch=16, lty=3, cex=0.6)
 
   
 ```
@@ -446,8 +439,6 @@ res3 <- acf(residuals(GGM_SP))
 
 plot(res3, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
-plot(res_GGM_SP, xlab="Year", ylab="Residuals (kWh)", type= "b",  pch=16, lty=3, cex=0.6)
-
 ```
 
 
@@ -464,18 +455,6 @@ legend("topleft", legend=c("Data", "BM", "GBM with two exp. shocks", "GGM"),
        col=c(1,2,4,7),  lty = 1, cex=1.2, lwd = 3)
 #main = "Per capita solar energy consumption - model comparison",
 dev.off()
-
-###Comparaison of residuals between BM, GBM and GGM
-png(file="plots/res_comp_bm_gbm_ggm.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(x = c(1:33), res_GGM_SP,lwd=2, col=7, type= "l", xlab="Year", ylab="Residuals (kWh)", pch=16, lty=1, cex.lab=1.5 ,xlim=c(0,33), ylim=c(-500,500))
-lines(x = c(1:33), res_GBM_SP, lwd=2, col=4)
-lines(x = c(1:33), res_BM_SP, lwd=2, col=2)
-legend("topleft", legend=c("BM", "GBM with two exp. shocks", "GGM"),
-       col=c(2,4,7),  lty = 1, cex=1.2, lwd = 3)
-#main = "Residuals distribution - model comparison",
-dev.off()
-
-
 ```
 
 
@@ -560,6 +539,8 @@ checkresiduals(auto.a)
 ####SARMAX model with external covariate 'fit_GGM_SP' 
 auto_with_reg <- auto.arima(cap_solar_SP, xreg = pred_GGM_SP.inst[1:33])
 summary(auto_with_reg)
+#Check residuals
+checkresiduals(auto_with_reg)
 
 
 plot(df$Year[25:57],cap_solar_SP, type= "o",xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=1, cex.lab=1.5, col = 1)
@@ -611,11 +592,11 @@ xreg <- cbind(Germany=df$Capita.solar.germany[25:57],
 
 armax_all_countries <- auto.arima(cap_solar_SP, xreg = xreg)
 summary(armax_all_countries)
+#Check residuals
+checkresiduals(armax_all_countries)
 # Residuals
 res_all_countries <- residuals(armax_all_countries)
 
-res4 <- Acf(res_all_countries)
-plot(res4, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 
 fitted_all_countries <- fitted(armax_all_countries)
 
@@ -645,10 +626,8 @@ xreg <- cbind(Germany=df$Capita.solar.germany[25:54],
 
 armax_all <- auto.arima(cap_solar_SP[1:30], xreg = xreg)
 summary(armax_all)
-# Residuals
-res_all <- residuals(armax_all)
-res5 <- Acf(res_all)
-plot(res5, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
+#Check residuals
+checkresiduals(armax_all)
 
 fitted_all <- fitted(armax_all)
 
@@ -801,7 +780,7 @@ ccf(x, y,15)
 #Fit linear regression model
 fit1 <- lm(y ~ x)
 summary(fit1)
-#summary analysis: Residual: average price of 4.34 for Solar PV modul. For an increase of 1 gigawatts, the price of PV modul drop of 0.50241usd$ per watts with a variation of 0.06389usd$ per watts. T-value significantly bigger than zero and their standard-errors, indicating that the coefficients are relatively bigger enough from their standor-errors. P-value smaller than 5% and three start, thus p-value significant enough to reject null hypothesis which mean there is a relationship between solar capacity and solar PV modul price. The residual standard error is 1.115, which represent 1.115/4.34312= 25.6% deviation error. R-squared of 0.7204, which mean that 72% of the variance of the solar PV modul price can be described by the solar capacity. F-Statistic larger than 1 significantly for 24 DF, meaning strong indication we can reject null hypothesis of no relationship.
+#summary analysis: Residual: average price of 4.34 for Solar PV module. For an increase of 1 gigawatts, the price of PV modul drop of 0.50241usd$ per watts with a variation of 0.06389usd$ per watts. T-value significantly bigger than zero and their standard-errors, indicating that the coefficients are relatively bigger enough from their standor-errors. P-value smaller than 5% and three start, thus p-value significant enough to reject null hypothesis which mean there is a relationship between solar capacity and solar PV modul price. The residual standard error is 1.115, which represent 1.115/4.34312= 25.6% deviation error. R-squared of 0.7204, which mean that 72% of the variance of the solar PV modul price can be described by the solar capacity. F-Statistic larger than 1 significantly for 24 DF, meaning strong indication we can reject null hypothesis of no relationship.
 
 ##Plot of the model
 plot(x, y, xlab="Capacity (GW)", ylab="Price ($/W)")
@@ -835,6 +814,7 @@ sm.regression(x, y,   h = 1,  add = T, col=5, ngrid=200)
 
 #We add variability bands
 sm.regression(x, y,   h = 3, ngrid=200, display="se")
+
 
 #####################
 ###Loess (Locally Weighted Least Squares Regression). it uses more local data to estimate our Y variable. But it is also known as a variable bandwidth smoother, in that it uses a 'nearest neighbors' method to smooth.
@@ -960,7 +940,8 @@ dev.off()
 #####Study of consumption of solar vs nuclear, wind, fossil, gas, oil, coal.
 
 SS <- df$Capita.solar.spain[25:57]
-SN <- df$Capita.nuclear[4:57]
+SS_N <- df$Capita.solar.spain[25:56]
+SN <- df$Capita.nuclear[4:56]
 SW <- df$Capita.wind[25:57]
 SF <- df$Capita.fossil[1:57]
 SG <- df$Capita.gas[5:57]
@@ -974,14 +955,14 @@ SC <- df$Capita.coal[1:57]
 ```{r results = 'asis'}
 ##Competition between solar and nuclear
 
-ucrcdNS <-UCRCD(SN,SS, display=T, m2 = 12431) #the only one that gives me error
+ucrcdNS <-UCRCD(SN,SS_N, display=T, m2 = 12431) #the only one that gives me error
 summary(ucrcdNS)
 
 png(file="plots/nuclear_vs_solar.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(year, SN, xlab="Year", ylab="Consumption per capita (kWh)", type="b",pch=16, lty=3, cex.lab=1.5, col = 1)
-points(dfcapita_solar_spain$Year[25:57],SS, type= "b", pch=16, lty=3, cex=0.7, col=7)
-lines(year, (ucrcdNS$fitted.i[[1]]), lwd=2, col=1)
-lines(df$Year[25:57], (ucrcdNS$fitted.i[[2]]), lwd=2, col=2)
+plot(capita_solar_spain$Year[4:56], SN, xlab="Year", ylab="Consumption per capita (kWh)", type="b",pch=16, lty=3, cex.lab=1.5, col = 1)
+points(df$Year[25:56], SS_N, type= "b", pch=16, lty=3, col=7)
+lines(df$Year[4:56], (ucrcdNS$fitted.i[[1]]), lwd=2, col=1)
+lines(df$Year[25:56], (ucrcdNS$fitted.i[[2]]), lwd=2, col=7)
 abline(v=1989, lty=2)
 legend("topleft", legend=c("Nuclear", "Solar"),
        col=c(1,7), lty = 1, cex=1.5, lwd = 3)
@@ -999,10 +980,10 @@ ucrcdWS <-  UCRCD(SW,SS, display=T)
 summary(ucrcdWS)
 
 png(file="plots/wind_vs_solar.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-plot(capita_wind$Year[25:57], SW, xlab="Year", ylab="Consumption per capita (kWh)", type="b",pch=16, lty=3, cex.lab=1.5, col = 1)
-points(capita_solar_spain$Year[25:57], SS, type= "b", pch=16, lty=3, col=7)
-lines(capita_wind$Year[25:57], (ucrcdWS$fitted.i[[1]]), lwd=2, col=1)
-lines(capita_solar_spain$Year[25:57], (ucrcdWS$fitted.i[[2]]), lwd=2, col=7)
+plot(df$Year[25:57], SW, xlab="Year", ylab="Consumption per capita (kWh)", type="b",pch=16, lty=3, cex.lab=1.5, col = 1)
+points(df$Year[25:57], SS, type= "b", pch=16, lty=3, col=7)
+lines(df$Year[25:57], (ucrcdWS$fitted.i[[1]]), lwd=2, col=1)
+lines(df$Year[25:57], (ucrcdWS$fitted.i[[2]]), lwd=2, col=7)
 legend("topleft", legend=c("Wind", "Solar"),
        col=c(1,7), lty = 1, cex=1.5, lwd = 3)
 dev.off()
@@ -1217,6 +1198,8 @@ mse.gam2
 png(file="plots/residuals_gam.png", width=14,height=12,units="cm",res=1200, pointsize=6)
 tsdisplay(residuals(gamscope), main = "Residuals of GAM with smoothing splines", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8)
 dev.off()
+# Test autocorrelation of residuals with durbin watson test
+dwtest(gamscope)
 
 aar1<- auto.arima(residuals(gamscope))
 plot(data.train$Capita.solar.spain, type="l")
