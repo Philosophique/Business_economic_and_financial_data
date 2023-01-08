@@ -320,6 +320,8 @@ Let's now fit a Bass model.
 bm_SP<-BM(cap_solar_SP,display = T)
 summary(bm_SP)
 
+dwtest(bm_SP)
+
 ###prediction (out-of-sample)
 pred_bm_SP<- predict(bm_SP, newx=c(1:50))
 pred.inst_SP<- make.instantaneous(pred_bm_SP)
@@ -798,7 +800,9 @@ ccf(x, y,15)
 #Fit linear regression model
 fit1 <- lm(y ~ x)
 summary(fit1)
-#summary analysis: Residual: average price of 4.34 for Solar PV module. For an increase of 1 gigawatts, the price of PV modul drop of 0.50241usd$ per watts with a variation of 0.06389usd$ per watts. T-value significantly bigger than zero and their standard-errors, indicating that the coefficients are relatively bigger enough from their standor-errors. P-value smaller than 5% and three start, thus p-value significant enough to reject null hypothesis which mean there is a relationship between solar capacity and solar PV modul price. The residual standard error is 1.115, which represent 1.115/4.34312= 25.6% deviation error. R-squared of 0.7204, which mean that 72% of the variance of the solar PV modul price can be described by the solar capacity. F-Statistic larger than 1 significantly for 24 DF, meaning strong indication we can reject null hypothesis of no relationship.
+
+#summary analysis: Residual: average price of 4.34 for Solar PV modul. For an increase of 1 gigawatts, the price of PV modul drop of 0.50241usd$ per watts with a variation of 0.06389usd$ per watts. T-value significantly bigger than zero and their standard-errors, indicating that the coefficients are relatively bigger enough from their standart-errors. P-value smaller than 5% and three start, thus p-value significant enough to reject null hypothesis which mean there is a relationship between solar capacity and solar PV modul price. The residual standard error is 1.115, which represent 1.115/4.34312= 25.6% deviation error. R-squared of 0.7204, which mean that 72% of the variance of the solar PV modul price can be described by the solar capacity. F-Statistic larger than 1 significantly for 24 DF, meaning strong indication we can reject null hypothesis of no relationship.
+
 
 ##Plot of the model
 plot(x, y, xlab="Capacity (GW)", ylab="Price ($/W)")
@@ -932,7 +936,7 @@ lines(p4, col=3)
 
 
 
-```{r Study different energy consumption plot together, results=}
+```{r Price vs capacity plot with loca regression, regression spline and smoothing, results=}
 
 # Show local regression, regression spline, smoothing spline in one plot
 
@@ -970,8 +974,9 @@ SC <- df$Capita.coal[1:57]
 
 
 
-```{r results = 'asis'}
+```{r competition between solar and nuclear, results=}
 ##Competition between solar and nuclear
+
 
 ucrcdNS <-UCRCD(SN,SS_N, display=T, m2 = 12431) #the only one that gives me error
 summary(ucrcdNS)
@@ -1224,7 +1229,7 @@ plot(data.train$Capita.solar.spain, type="l")
 lines(fitted(aar1)+ fitted(gamscope), col=4)
 
 
-
++++
 ```
 
 
