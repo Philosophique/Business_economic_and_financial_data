@@ -60,40 +60,38 @@ library(forecast)
 
 # Read and prepare datasets
 
-```{r Read dataset, results=}
+```{r results= 'asis'}
 # Read the dataset
-file_path <- getwd()
-paste(file_path)
 
 
 # Per capita energy consumption from solar
-df_capita_solar <- read.csv(paste0(file_path, "/per-capita-solar.csv"),header=TRUE)
+df_capita_solar <- read.csv("./datasets/per-capita-solar.csv",header=TRUE)
 # Solar PV module prices
-df_price <- read.csv(paste0(file_path, "/solar-pv-prices.csv"),header=TRUE)
+df_price <- read.csv("./datasets/solar-pv-prices.csv",header=TRUE)
 # Share of electricity production from solar
-df_share <- read.csv(paste0(file_path, "/share-electricity-solar.csv"),header=TRUE)
+df_share <- read.csv("./datasets/share-electricity-solar.csv",header=TRUE)
 # Installed solar energy capacity
-df_capacity <- read.csv(paste0(file_path, "/installed-solar-PV-capacity.csv"),header=TRUE)
+df_capacity <- read.csv("./datasets/installed-solar-PV-capacity.csv",header=TRUE)
 # Per capita energy consumption from nuclear
-df_capita_nuclear <- read.csv(paste0(file_path, "/per-capita-nuclear.csv"),header=TRUE)
+df_capita_nuclear <- read.csv("./datasets/per-capita-nuclear.csv",header=TRUE)
 # Per capita energy consumption from wind
-df_capita_wind <- read.csv(paste0(file_path, "/per-capita-wind.csv"),header=TRUE)
+df_capita_wind <- read.csv("./datasets/per-capita-wind.csv",header=TRUE)
 # Per capita energy consumption from fossil
-df_capita_fossil <- read.csv(paste0(file_path, "/fossil-fuels-per-capita.csv"),header=TRUE)
+df_capita_fossil <- read.csv("./datasets/fossil-fuels-per-capita.csv",header=TRUE)
 # Per capita energy consumption from oil
-df_capita_oil <- read.csv(paste0(file_path, "/per-capita-oil.csv"),header=TRUE)
+df_capita_oil <- read.csv("./datasets/per-capita-oil.csv",header=TRUE)
 # Per capita energy consumption from gas
-df_capita_gas <- read.csv(paste0(file_path, "/per-capita-gas.csv"),header=TRUE)
+df_capita_gas <- read.csv("./datasets/per-capita-gas.csv",header=TRUE)
 # Per capita energy consumption from coal
-df_capita_coal <- read.csv(paste0(file_path, "/coal-consumption-per-capita.csv"),header=TRUE)
+df_capita_coal <- read.csv("./datasets/coal-consumption-per-capita.csv",header=TRUE)
 # solar power generation
-df_solar_generation <- read.csv(paste0(file_path, "/solar-energy-consumption.csv"),header=TRUE)
+df_solar_generation <- read.csv("./datasets/solar-energy-consumption.csv",header=TRUE)
 
 
 ```
 
 
-```{r df names creation, results=}
+```{r results= 'asis'}
 
 entity <- 'Spain'
 
@@ -251,7 +249,7 @@ plot(acf1, xlab = "Lag", main = "Autocorrelation of solar consumption", col = 7,
 
 ## LM
 
-```{r Cap_solar_SP linear regression, results=}
+```{r results='asis'}
 
 ##fit a linear regression model (Just to check is not good)
 m_lm <- lm(cap_solar_SP ~ df$Year[25:57])
@@ -274,7 +272,7 @@ plot(df$Year[25:57], res_lm, xlab="Year", ylab="Residuals (kWh)", type= "b",  pc
 ## TsLM
 
 
-```{r , results=}
+```{r , results='asis'}
 
 # Works pretty bad because it only models the trend
 
@@ -315,11 +313,12 @@ dwtest(m_tslm)
 
 Let's now fit a Bass model.
 
-```{r cap_solar_SP Base Model (BM), results=}
+```{r results='asis'}
 
 bm_SP<-BM(cap_solar_SP,display = T)
 summary(bm_SP)
 
+# Durbin Watson test for residuals
 dwtest(bm_SP)
 
 ###prediction (out-of-sample)
@@ -382,7 +381,7 @@ legend("topleft", legend=c("Data", "BM", "BM 75%"),
 
 # Generalized bass model
 
-```{r cap_solar_SP GBM, results=}
+```{r results='asis'}
 
 GBM_SP_e2 <- GBM(cap_solar_SP, shock = "exp", nshock = 2, prelimestimates = c(1.243162e+04, 2.424655e-05, 3.283666e-01, 19, -0.1,0.2, 29,0.2,0.4), display=TRUE) 
 summary(GBM_SP_e2)
@@ -417,7 +416,7 @@ plot(res_GBM, xlab = "Lag", main = "Autocorrelation of residuals", col = 7, lwd 
 
 # GGM
 
-```{r cap_solar_SP GGM, results=}
+```{r results='asis'}
 
 GGM_SP<- GGM(cap_solar_SP, prelimestimates=c(1.243162e+04, 0.01, 0.01,  2.424655e-05, 3.283666e-01))
 summary(GGM_SP)
@@ -481,7 +480,7 @@ dev.off()
 
 # Arima
 
-```{r cap_solar_SP Arima, results=}
+```{r results='asis'}
 
 plot(x = df$Year[25:57],cap_solar_SP, type= "b", xlab="Year", ylab="Per capita consumption (kWh)",  pch=16, lty=3, cex=0.6)
 
@@ -500,7 +499,7 @@ dev.off()
 
 ```
 
-Own Arima
+Try out Arima manually
 
 ```{r results = 'asis'}
 # Fit Arima model
@@ -533,7 +532,7 @@ lines(fitted(arima1)[1:34], lwd =2, col=7)
 
 Auto arima
 
-```{r cap_solar_SP Autoarima, results=}
+```{r results='asis'}
 
 # Try autoarima
 auto.a <- auto.arima(cap_solar_SP)
@@ -603,7 +602,7 @@ axis(1, at = seq(1, 42, by=5), labels=seq(1989, 2030, by=5))
 
 ## All countries
 
-```{r countries influence on cap_solar_SP, results=}
+```{r results='asis'}
 
 xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
               China=df$Capita.solar.china[25:57],
@@ -631,12 +630,12 @@ dev.off()
  
  
 
-```{r all influence on cap_solar_SP, results=}
+```{r results='asis'}
 
 # Let's see the influence of the solar energy consumption in China over the one in Spain
 
 
-xreg <- cbind(Germany=df$Capita.solar.germany[25:54], 
+xreg <- cbind(Germany=df$Capita.solar.germany[25:54],
               China=df$Capita.solar.china[25:54],
               USA=df$Capita.solar.usa[25:54],
               Australia=df$Capita.solar.australia[25:54],
@@ -655,7 +654,7 @@ plot(df$Year[25:54], cap_solar_SP[1:30], type= "b", xlab="Year", ylab="Per capit
 lines(df$Year[25:54],fitted_all, lwd = 2, col = 2)
 
 
-xreg_forecast <- cbind(Germany=df$Capita.solar.germany[54:57], 
+xreg_forecast <- cbind(Germany=df$Capita.solar.germany[54:57],
                  China=df$Capita.solar.china[54:57],
                  USA=df$Capita.solar.usa[54:57],
                  Australia=df$Capita.solar.australia[54:57],
@@ -675,7 +674,7 @@ dev.off()
 
 ############################# If not to forecast: ##############################
 
-xreg <- cbind(Germany=df$Capita.solar.germany[25:57], 
+xreg <- cbind(Germany=df$Capita.solar.germany[25:57],
               China=df$Capita.solar.china[25:57],
               USA=df$Capita.solar.usa[25:57],
               India=df$Capita.solar.india[25:57],
@@ -701,13 +700,13 @@ lines(df$Year[25:57],fitted_all, lwd =2, col = 2)
 
 # Study of influence of certain countries
 
-```{r Installed solar capacity of spain vs world, results=}
+```{r results='asis'}
 #Inspecting if the installed solar energy capacity of Spain is influenced by the one of another country.
 
 df_capacity_transformed <- df_capacity
 
 #Create one columns per country, with years as row and solar capacity as value
-df_capacity_transformed <-  dcast(df_capacity_transformed, Year ~ Entity) 
+df_capacity_transformed <-  dcast(df_capacity_transformed, Year ~ Entity)
 
 #remove all white space in name columns
 names(df_capacity_transformed) <- gsub(" ", ".", names(df_capacity_transformed))
@@ -721,7 +720,7 @@ df_capacity_transformed[is.na(df_capacity_transformed)] <- 0 #Convert NA to 0
 ## Using Pearson correlation, Spain vs all
 
 cor_spain_vs_all <- cor(df_capacity_transformed[ , colnames(df_capacity_transformed) != "Spain"], df_capacity_transformed$Spain)
-cor_spain_vs_all #Portugal with 0.9449656, Belgium 0.9423068 and Australia 0.9409159 are the country with higher Pearson correlation. 
+cor_spain_vs_all #Portugal with 0.9449656, Belgium 0.9423068 and Australia 0.9409159 are the country with higher Pearson correlation.
 
 
 ## Get the residuals after fitting arima model
@@ -760,12 +759,12 @@ res.india = residuals(auto.arima.india)
 
 ```
 
-```{r Installed solar capacity of spain vs world2, results=}
+```{r results='asis'}
 
 # Check cross correlation plots of residuals for most significant countries.
 
 png(file="plots/portugal_vs_spain.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-ccf_spain_portugal <- ccf(res.portugal, res.spain,10, main = "Portugal vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) # Spain leads Portugal (positive cross correlation at lag 2) 
+ccf_spain_portugal <- ccf(res.portugal, res.spain,10, main = "Portugal vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) # Spain leads Portugal (positive cross correlation at lag 2)
 dev.off()
 
 ccf_spain_portugal <- ccf(res.usa, res.spain,10)      # Not really clear
@@ -779,7 +778,7 @@ ccf_spain_portugal <- ccf(res.germany, res.spain,10, main = "Germany vs Spain", 
 dev.off()
 
 png(file="plots/france_vs_spain.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-ccf_spain_portugal <- ccf(res.france, res.spain,10, main = "France vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) # Spain leads France (positive cross correlation at lag 2) 
+ccf_spain_portugal <- ccf(res.france, res.spain,10, main = "France vs Spain", col = 7, lwd = 4, ci.col = 7, cex.lab = 1.5, cex.main = 1.8) # Spain leads France (positive cross correlation at lag 2)
 dev.off()
 
 ```
@@ -787,7 +786,7 @@ dev.off()
 # Model Price-Capacity relation
 
 
-```{r Relationship capacity vs PV modul price, results=}
+```{r results='asis'}
 
 y <-  df$PV.price[32:57]
 x <-  df$PV.capacity[32:57] #[32:57] to avoid 0 values of df_capacity
@@ -936,7 +935,7 @@ lines(p4, col=3)
 
 
 
-```{r Price vs capacity plot with loca regression, regression spline and smoothing, results=}
+```{r results='asis'}
 
 # Show local regression, regression spline, smoothing spline in one plot
 
@@ -958,7 +957,7 @@ dev.off()
 # Modelling competition between different energies
 
 
-```{r Study different energy consumption, results=}
+```{r results='asis'}
 #####Study of consumption of solar vs nuclear, wind, fossil, gas, oil, coal.
 
 SS <- df$Capita.solar.spain[25:57]
@@ -974,7 +973,7 @@ SC <- df$Capita.coal[1:57]
 
 
 
-```{r competition between solar and nuclear, results=}
+```{r results='asis'}
 ##Competition between solar and nuclear
 
 
@@ -1228,8 +1227,6 @@ aar1<- auto.arima(residuals(gamscope))
 plot(data.train$Capita.solar.spain, type="l")
 lines(fitted(aar1)+ fitted(gamscope), col=4)
 
-
-+++
 ```
 
 
@@ -1331,9 +1328,9 @@ par(mfrow=c(1,1))
 plot(boost.capita$train.error, type="l", ylab="training error")#always decreasing with increasing number of trees
 
 # Feature importance plot
-par(mai=mai.new)
+# par(mai=mai.new)
 summary(boost.capita, las=1, cBar=10) 
-par(mai=mai.old)
+# par(mai=mai.old)
 
 
 
@@ -1368,11 +1365,11 @@ boost.capita.deeper=gbm(Capita.solar.spain ~ . - Capita.fossil, data=data.train,
 
 plot(boost.capita.deeper$train.error, type="l")
 
-#par(mai=mai.new)
+
 
 summary(boost.capita.deeper, las=1, cBar=10)  
 
-#par(mai=mai.old)
+
 
 yhat.boost=predict(boost.capita.deeper ,newdata=data.test,n.trees=1:500)
 err = apply(yhat.boost,2, function(pred) mean((data.test$Capita.solar.spain-pred)^2))
@@ -1392,10 +1389,9 @@ boost.capita.lr=gbm(Capita.solar.spain ~ . - Capita.fossil, data=data.train, bag
                  distribution="gaussian", n.trees=500, interaction.depth=1, shrinkage=0.01)
 plot(boost.capita.lr$train.error, type="l")
 
-par(mai=mai.new)
-
+# par(mai=mai.new)
 summary(boost.capita.lr, las=1, cBar=10) 
-par(mai=mai.old)
+# par(mai=mai.old)
 
 yhat.boost=predict(boost.capita.lr ,newdata=data.test,n.trees=1:500)
 err = apply(yhat.boost,2,function(pred) mean((data.test$Capita.solar.spain-pred)^2))
@@ -1416,26 +1412,26 @@ boost.capita.comb=gbm(Capita.solar.spain ~ . - Capita.fossil,data=data.train, ba
 plot(boost.capita.comb$train.error, type="l")
 #
 
-par(mai=mai.new)
+# par(mai=mai.new)
 
 png(file="plots/boosting_importances.png", width=14,height=12,units="cm",res=1200, pointsize=6)
-mai.old<-par()$mai
-mai.old
+# mai.old<-par()$mai
+# mai.old
 #new vector
-mai.new<-mai.old
+# mai.new<-mai.old
 #new space on the left
-mai.new[2] <- 1
-mai.new
+# mai.new[2] <- 1
+# mai.new
 #modify graphical parameters
-par(mai=mai.new)
+# par(mai=mai.new)
 # summary(boost.capita, las=1) 
 #las=1 horizontal names on y
 summary(boost.capita.comb, las=1, cBar=10, cex.lab = 1.5, cex.names = 1.1) # cbar to say how many variables in the plot
 #back to original window
-par(mai=mai.old)
+# par(mai=mai.old)
 dev.off()
 
-par(mai=mai.old)
+# par(mai=mai.old)
 
 yhat.boost=predict(boost.capita.comb ,newdata=data.test,n.trees=1:5000)
 err = apply(yhat.boost, 2, function(pred) mean((data.test$Capita.solar.spain-pred)^2))
