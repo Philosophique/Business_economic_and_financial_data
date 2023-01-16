@@ -7,4 +7,4 @@ Implementation of concepts learned during the course "Business, economic and fin
 - Non parametric regression: Regression and smoothing splines, loess, GAM and gradient boosting
 
 
-Check presentation file for more details of the results.
+Check Presentation.pdf file for more details of the results.
